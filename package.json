@@ -8,6 +8,7 @@
     "node":"18.16.1"
   },
   "scripts": {
+    "install-prod": "npm install --omit=dev",
     "start": "node index.js"
   },
   "keywords": [],
