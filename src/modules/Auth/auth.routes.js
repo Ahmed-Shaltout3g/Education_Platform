@@ -10,29 +10,29 @@ import allowedExtensions from "../../utils/allowedExtention.js";
 const router = Router();
 router.post(
   "/signup",
-  // validationCoreFunction(validations.signUpVaildation),
+  validationCoreFunction(validations.signUpVaildation),
   asyncHandler(allRoutes.signUp)
 );
 router.post(
   "/signin",
-  // validationCoreFunction(validations.signInVaildation),
+  validationCoreFunction(validations.signInVaildation),
   asyncHandler(allRoutes.login)
 );
 router.get(
   "/confirmEmail/:token",
-  // validationCoreFunction(validations.confirmationEmailValidation),
+  validationCoreFunction(validations.confirmationEmailValidation),
   asyncHandler(allRoutes.confirmEmail)
 );
 
 router.post(
   "/forget",
-  // validationCoreFunction(validations.forgetPassVaildation),
+  validationCoreFunction(validations.forgetPassVaildation),
   asyncHandler(allRoutes.forgetPass)
 );
 
 router.post(
   "/resetPass/:token",
-  // validationCoreFunction(validations.resetPassVaildation),
+  validationCoreFunction(validations.resetPassVaildation),
   asyncHandler(allRoutes.resetPassword)
 );
 router.patch(

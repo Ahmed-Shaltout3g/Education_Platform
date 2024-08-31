@@ -9,10 +9,10 @@ const authFunction = async (req, res, next) => {
       new Error("In_valid token ,please login first", { cause: 400 })
     );
   }
-  if (!token.startsWith("ecomm__")) {
+  if (!token.startsWith("online__")) {
     return next(new Error("Wrong Prefix", { cause: 401 }));
   }
-  const separaedToken = token.split("ecomm__")[1];
+  const separaedToken = token.split("online__")[1];
   try {
     const decode = decodeToken({ payload: separaedToken });
 

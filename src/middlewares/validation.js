@@ -13,7 +13,7 @@ export const generalFields = {
     .required(),
   password: joi
     .string()
-    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/)
+    .regex(/^[a-zA-Z0-9]{8,}$/)
     .messages({
       "string.pattern.base": "Password regex fail",
     })

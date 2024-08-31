@@ -15,7 +15,7 @@ export const signUp = async (req, res, next) => {
     repassword,
     phoneNumber,
     gender,
-    FatherPhoneNumber,
+    parentsPhoneNumber,
     stage,
     grade,
   } = req.body;
@@ -39,7 +39,7 @@ export const signUp = async (req, res, next) => {
           password: encryptPassword,
           gender,
           phoneNumber,
-          FatherPhoneNumber,
+          parentsPhoneNumber,
           stage,
           grade,
         },

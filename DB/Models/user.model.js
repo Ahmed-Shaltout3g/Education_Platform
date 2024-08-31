@@ -27,9 +27,9 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Phone is required"],
     },
-    FatherPhoneNumber: {
+    parentsPhoneNumber: {
       type: String,
-      required: [true, "Phone is required"],
+      required: [true, "parentsPhoneNumber is required"],
     },
     profileImage: {
       secure_url: String,
@@ -45,16 +45,19 @@ const userSchema = new Schema(
       type: String,
       default: "Not Specifid",
       enum: ["male", "female"],
+      required: [true, "gender is required"],
     },
     stage: {
       type: String,
       default: "secondary",
       enum: ["Primary", "Preparatory", "secondary"],
+      required: [true, "stage is required"],
     },
     grade: {
       type: String,
       default: "Third",
       enum: ["First", "Second", "Third"],
+      required: [true, "grade is required"],
     },
     isConfirmed: {
       type: Boolean,

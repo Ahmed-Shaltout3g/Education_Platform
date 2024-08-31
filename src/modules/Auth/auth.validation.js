@@ -6,20 +6,30 @@ export const signUpVaildation = {
     .object()
     .required()
     .keys({
-      userName: joi.string().min(3).max(1000).required(),
+      fullName: joi.string().min(3).max(1000).required(),
       email: generalFields.email,
       password: generalFields.password,
       repassword: joi.string().valid(joi.ref("password")).required(),
-      gender: joi.string().optional(),
-      age: joi.number().min(2).optional(),
-      phone: joi
+      gender: joi.string().valid("male", "female").required(),
+      phoneNumber: joi
         .string()
         .regex(/^\+20[0-9]{10}$/)
         .messages({
           "string.pattern.base": "enter valid phone number",
         })
         .required(),
-      address: joi.array().items(joi.string()),
+      parentsPhoneNumber: joi
+        .string()
+        .regex(/^\+20[0-9]{10}$/)
+        .messages({
+          "string.pattern.base": "enter valid phone number",
+        })
+        .required(),
+      stage: joi
+        .string()
+        .valid("Primary", "Preparatory", "secondary")
+        .required(),
+      grade: joi.string().valid("First", "Second", "Third").required(),
     }),
 };
 
