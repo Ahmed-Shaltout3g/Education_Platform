@@ -4,7 +4,13 @@ import { generalFields } from "../../middlewares/validation.js";
 export const subCategorySchema = {
   body: joi
     .object({
-      name: joi.string().min(4).max(55).required(),
+      name: joi
+        .string()
+        .min(4)
+
+        .max(55)
+        .required(),
+      nameForStudent: joi.string().required(),
     })
     .required(),
   query: joi
@@ -17,7 +23,13 @@ export const subCategorySchema = {
 export const subCategoryUpdateSchema = {
   body: joi
     .object({
-      name: joi.string().min(4).max(55).required(),
+      name: joi
+        .string()
+        .min(4)
+        .valid("first", "second", "third", "fourth", "fifth", "sixth")
+        .max(55)
+        .required(),
+      nameForStudent: joi.string().required(),
     })
     .required(),
   query: joi

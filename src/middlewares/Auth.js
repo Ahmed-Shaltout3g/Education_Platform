@@ -1,6 +1,6 @@
+import { userModel } from "../../DB/Models/user.model.js";
 import { asyncHandler } from "../utils/errorHandling.js";
-import { decodeToken } from "../utils/tokenFunctions.js";
-import { userModel } from "./../../DB/Models/user.model.js";
+import { decodeToken, generateToken } from "../utils/tokenFunctions.js";
 
 const authFunction = async (req, res, next) => {
   const { token } = req.headers;
@@ -13,12 +13,14 @@ const authFunction = async (req, res, next) => {
     return next(new Error("Wrong Prefix", { cause: 401 }));
   }
   const separaedToken = token.split("online__")[1];
+
   try {
     const decode = decodeToken({ payload: separaedToken });
 
     if (!decode?._id) {
       return next(new Error("fail decode", { cause: 500 }));
     }
+
     const user = await userModel
       .findById(decode._id)
       .select("email _id userName changePassAt role ");
@@ -36,13 +38,18 @@ const authFunction = async (req, res, next) => {
     next();
   } catch (error) {
     // refresh token
-    if (error == "TokenExpiredError: jwt expired") {
-      const findUser = await userModel.findOne({ token });
+    console.log(error);
+
+    if (error.name === "TokenExpiredError") {
+      console.log(error);
+
+      const user = await userModel.findOne({ token: separaedToken });
       if (!user) {
         return next(new Error("invalid token", { cause: 401 }));
       }
-      const refreshToken = generateToken(
-        {
+
+      const refreshToken = generateToken({
+        payload: {
           _id: user._id,
           fullName: user.fullName,
           role: user.role,
@@ -50,11 +57,10 @@ const authFunction = async (req, res, next) => {
           isLogedIn: true,
           isConfirmed: user.isConfirmed,
         },
-        process.env.TOKEN_KEY,
-        { expiresIn: "10 hour" }
-      );
-      findUser.token = refreshToken;
-      await userModel.save();
+      });
+
+      user.token = refreshToken;
+      await user.save();
       res.status(200).json({ message: "Refresh token", refreshToken });
     }
   }

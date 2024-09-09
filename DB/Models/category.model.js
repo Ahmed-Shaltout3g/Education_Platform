@@ -9,6 +9,10 @@ const categorySchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    nameForStudent: {
+      type: String,
+      required: true,
+    },
     slug: {
       type: String,
       required: true,
@@ -27,11 +31,11 @@ const categorySchema = new Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-// categorySchema.virtual("subCategory", {
-//   ref: "SubCategory",
-//   localField: "_id",
-//   foreignField: "categoryId",
-// });
+categorySchema.virtual("subCategory", {
+  ref: "SubCategory",
+  localField: "_id",
+  foreignField: "categoryId",
+});
 
 // categorySchema.virtual("Brands", {
 //   ref: "brand",

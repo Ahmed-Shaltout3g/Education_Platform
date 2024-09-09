@@ -14,7 +14,10 @@ const subCategorySchema = new Schema(
       required: true,
       lowercase: true,
     },
-    codes: [String],
+    nameForStudent: {
+      type: String,
+      required: true,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "Uesr",
@@ -32,8 +35,8 @@ const subCategorySchema = new Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-subCategorySchema.virtual("Brand", {
-  ref: "Brand",
+subCategorySchema.virtual("Course", {
+  ref: "Course",
   localField: "_id",
   foreignField: "subCategoryId",
 });

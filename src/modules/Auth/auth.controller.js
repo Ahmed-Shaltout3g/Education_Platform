@@ -179,7 +179,7 @@ export const forgetPass = async (req, res, next) => {
     { changePassAt: Date.now() },
     { new: true }
   );
-  res.status(201).json({ message: "Please check your email" });
+  res.status(201).json({ message: "Please check your email", restPasswordURL });
 };
 
 // ________________________ResetPassword_______________________________--

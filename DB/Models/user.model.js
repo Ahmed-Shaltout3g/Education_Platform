@@ -29,7 +29,6 @@ const userSchema = new Schema(
     },
     parentsPhoneNumber: {
       type: String,
-      required: [true, "parentsPhoneNumber is required"],
     },
     profileImage: {
       secure_url: String,
@@ -39,7 +38,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Role is required"],
       default: systemRoles.USER,
-      enum: [systemRoles.USER, systemRoles.ADMIN, systemRoles.SUPER_ADMIN],
+      enum: [systemRoles.USER, systemRoles.ADMIN, systemRoles.TEACHER],
     },
     gender: {
       type: String,
@@ -50,14 +49,12 @@ const userSchema = new Schema(
     stage: {
       type: String,
       default: "secondary",
-      enum: ["Primary", "Preparatory", "secondary"],
-      required: [true, "stage is required"],
+      enum: ["primary", "preparatory", "secondary"],
     },
     grade: {
       type: String,
       default: "Third",
-      enum: ["First", "Second", "Third"],
-      required: [true, "grade is required"],
+      enum: ["first", "second", "third", "fourth", "fifth", "sixth"],
     },
     isConfirmed: {
       type: Boolean,
@@ -79,6 +76,13 @@ const userSchema = new Schema(
       type: Date,
     },
     token: {
+      type: String,
+    },
+    // teacher
+    subjecTeacher: {
+      type: String,
+    },
+    moreInfo: {
       type: String,
     },
   },

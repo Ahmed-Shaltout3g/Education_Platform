@@ -1,15 +1,15 @@
 import { Router } from "express";
-const router = Router();
-import * as CategoryController from "./category.controller.js";
-import { asyncHandler } from "../../utils/errorHandling.js";
 import { myMulter } from "../../services/multer.js";
 import allowedExtensions from "../../utils/allowedExtention.js";
+import { asyncHandler } from "../../utils/errorHandling.js";
+const router = Router();
+import * as courseController from "./course.controller.js";
 import { validationCoreFunction } from "../../middlewares/validation.js";
 import {
-  categoryDeleteSchema,
-  categorySchema,
-  categoryUpdateSchema,
-} from "./category.validation.js";
+  addCourseSchema,
+  courseSchema,
+  deleteCourseSchema,
+} from "./course.validation.js";
 import { Auth, authorization } from "../../middlewares/Auth.js";
 import { systemRoles } from "../../utils/systemRoles.js";
 
@@ -17,24 +17,27 @@ router.post(
   "/create",
   Auth(),
   authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
-  validationCoreFunction(categorySchema),
-  asyncHandler(CategoryController.createCategory)
+  myMulter(allowedExtensions.Image).single("image"),
+  validationCoreFunction(addCourseSchema),
+  asyncHandler(courseController.createCourse)
 );
 
 router.put(
   "/update",
   Auth(),
   authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
-  validationCoreFunction(categoryUpdateSchema),
-  asyncHandler(CategoryController.updateCategory)
+  myMulter(allowedExtensions.Image).single("image"),
+  validationCoreFunction(courseSchema),
+  asyncHandler(courseController.updateCourse)
 );
+
 router.delete(
   "/delete",
   Auth(),
   authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
-  validationCoreFunction(categoryDeleteSchema),
-  asyncHandler(CategoryController.deleteCategory)
+  validationCoreFunction(deleteCourseSchema),
+  asyncHandler(courseController.deleteCourse)
 );
-router.get("/", asyncHandler(CategoryController.getAllCategory));
+router.get("/", asyncHandler(courseController.getAllCourses));
 
 export default router;

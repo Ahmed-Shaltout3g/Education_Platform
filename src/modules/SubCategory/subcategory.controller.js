@@ -3,14 +3,14 @@ import { subCategoryModel } from "../../../DB/Models/subCategory.model.js";
 import cloudinary from "../../utils/cloudinaryConfigration.js";
 import slugify from "slugify";
 import { categoryModel } from "../../../DB/Models/category.model.js";
-import { brandModel } from "./../../../DB/Models/brand.model.js";
-import { productModel } from "../../../DB/Models/product.model.js";
+import { courseModel } from "./../../../DB/Models/course.model.js";
+import { lectureModel } from "../../../DB/Models/lecture.model.js";
 
 // =============================craete Subcategory======================
 export const createSubCategory = async (req, res, next) => {
   // ===take category Id and check if it found or not ===
   const { categoryId } = req.query;
-  const { name } = req.body;
+  const { name, nameForStudent } = req.body;
   const { _id } = req.user;
   const category = await categoryModel.findById(categoryId);
   if (!category) {
@@ -26,14 +26,12 @@ export const createSubCategory = async (req, res, next) => {
     );
   }
   const slug = slugify(name, "_"); // slug the name
-  if (!req.file) {
-    return next(new Error("please upload your picture", { cause: 400 }));
-  }
-  ePath = `${process.env.ECOMMERCE_FOLDER}/Categories/${category.customId}/subCategories/${customId}`;
+
   const subCategoryObject = {
     name,
     slug,
     categoryId,
+    nameForStudent,
     createdBy: _id,
   };
   const createSubCtegory = await subCategoryModel.create(subCategoryObject);
@@ -60,7 +58,7 @@ export const updateSubCategory = async (req, res, next) => {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
   // name equal old name
-  const { name } = req.body;
+  const { name, nameForStudent } = req.body;
   if (subCategory.name == name.toLowerCase) {
     return next(
       new Error("new name same old name please enter anothe name ", {
@@ -69,6 +67,25 @@ export const updateSubCategory = async (req, res, next) => {
     );
   }
 
+  if (
+    !(
+      name == "first" ||
+      name == "second" ||
+      name == "third" ||
+      name == "sixth" ||
+      name == "fifth" ||
+      name == "fourth"
+    )
+  ) {
+    return next(
+      new Error(
+        "new name should equal [first, second, third, fourth, fifth, sixth]",
+        {
+          cause: 404,
+        }
+      )
+    );
+  }
   // name is not dublicated
 
   const isDublicated = await subCategoryModel.findOne({ name });
@@ -89,6 +106,7 @@ export const updateSubCategory = async (req, res, next) => {
   // add changes in DB
   subCategory.slug = slug;
   subCategory.name = name;
+  subCategory.nameForStudent = nameForStudent;
 
   // save changes in DB
   subCategory.updatedBy = _id;
@@ -122,32 +140,32 @@ export const deleteSubCategory = async (req, res, next) => {
   }
   // delete form DB
 
-  // delete brands related
+  //  delete course link with this subCategoryId
+  const course = await courseModel.findOne({ subCategoryId });
+  if (course) {
+    const deleteCourses = await courseModel.deleteMany({
+      subCategoryId,
+    });
+    if (!deleteCourses.deletedCount) {
+      return next(
+        new Error("fail delete courses please try again", { cause: 500 })
+      );
+    }
+  }
 
-  // const brand = await brandModel.findOne({ subCategoryId });
-  // if (brand) {
-  //   const deleteBrands = await brandModel.deleteMany({
-  //     subCategoryId,
-  //   });
-  //   if (!deleteBrands.deletedCount) {
-  //     return next(
-  //       new Error("fail delete Brands please try again", { cause: 500 })
-  //     );
-  //   }
-  // }
-  // //  delete product link with this category
-  // const product = await productModel.findOne({ subCategoryId });
-  // if (product) {
-  //   const deleteProducts = await productModel.deleteMany({
-  //     subCategoryId,
-  //   });
+  //  delete product link with this category
+  const lecture = await lectureModel.findOne({ subCategoryId });
+  if (lecture) {
+    const deleteLectures = await lectureModel.deleteMany({
+      subCategoryId,
+    });
 
-  //   if (!deleteProducts.deletedCount) {
-  //     return next(
-  //       new Error("fail delete Products please try again", { cause: 500 })
-  //     );
-  //   }
-  // }
+    if (!deleteLectures.deletedCount) {
+      return next(
+        new Error("fail delete lectures please try again", { cause: 500 })
+      );
+    }
+  }
   // delete form host
 
   res.status(200).json({
@@ -183,29 +201,29 @@ export const getAllSubCategories = async (req, res, next) => {
   });
 };
 
-export const generateCodes = async (req, res, next) => {
-  const { _id } = req.user;
-  const categoryId = req.query;
-  const numberOfCodes = req.body;
-  const subCategory = await subCategoryModel.findById(categoryId);
-  if (!subCategory) {
-    return next(new Error("Invalid subCategoty Id", { cause: 400 }));
-  }
-  const count = await subCategoryModel.find().count();
-  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const nanoid = customAlphabet(characters, 6);
-  let codes = [];
-  for (let i = 0; i <= numberOfCodes; i++) {
-    number = count + nanoid;
-    codes.push(number);
-  }
-  subCategory.codes = codes;
-  const saveCodes = await subCategoryModel.save();
-  if (!saveCodes) {
-    return next(new Error("Error please try again", { cause: 500 }));
-  }
-  res.status(200).json({
-    message: "Done",
-    codes,
-  });
-};
+// export const generateCodes = async (req, res, next) => {
+//   const { _id } = req.user;
+//   const categoryId = req.query;
+//   const numberOfCodes = req.body;
+//   const subCategory = await subCategoryModel.findById(categoryId);
+//   if (!subCategory) {
+//     return next(new Error("Invalid subCategoty Id", { cause: 400 }));
+//   }
+//   const count = await subCategoryModel.find().count();
+//   const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//   const nanoid = customAlphabet(characters, 6);
+//   let codes = [];
+//   for (let i = 0; i <= numberOfCodes; i++) {
+//     number = count + nanoid;
+//     codes.push(number);
+//   }
+//   subCategory.codes = codes;
+//   const saveCodes = await subCategoryModel.save();
+//   if (!saveCodes) {
+//     return next(new Error("Error please try again", { cause: 500 }));
+//   }
+//   res.status(200).json({
+//     message: "Done",
+//     codes,
+//   });
+// };

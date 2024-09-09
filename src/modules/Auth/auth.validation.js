@@ -27,9 +27,12 @@ export const signUpVaildation = {
         .required(),
       stage: joi
         .string()
-        .valid("Primary", "Preparatory", "secondary")
+        .valid("primary", "preparatory", "secondary")
         .required(),
-      grade: joi.string().valid("First", "Second", "Third").required(),
+      grade: joi
+        .string()
+        .valid("first", "second", "third", "fourth", "fifth", "sixth")
+        .required(),
     }),
 };
 

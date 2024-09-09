@@ -1,3 +1,5 @@
+import cloudinary from "./cloudinaryConfigration.js";
+
 let stackVar;
 const asyncHandler = (API) => {
   return (req, res, next) => {

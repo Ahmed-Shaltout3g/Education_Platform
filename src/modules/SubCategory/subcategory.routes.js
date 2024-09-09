@@ -16,14 +16,14 @@ import { systemRoles } from "../../utils/systemRoles.js";
 router.post(
   "/create",
   Auth(),
-  authorization([systemRoles.ADMIN, systemRoles.SUPER_ADMIN]),
+  authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
   validationCoreFunction(subCategorySchema),
   asyncHandler(subCategoryController.createSubCategory)
 );
 router.put(
   "/update",
   Auth(),
-  authorization([systemRoles.ADMIN, systemRoles.SUPER_ADMIN]),
+  authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
   validationCoreFunction(subCategoryUpdateSchema),
   asyncHandler(subCategoryController.updateSubCategory)
 );
@@ -31,17 +31,11 @@ router.put(
 router.delete(
   "/delete",
   Auth(),
-  authorization([systemRoles.ADMIN, systemRoles.SUPER_ADMIN]),
+  authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
   validationCoreFunction(subCategoryDeleteSchema),
   asyncHandler(subCategoryController.deleteSubCategory)
 );
 
-router.post(
-  "/addCodes",
-  Auth(),
-  authorization([systemRoles.ADMIN, systemRoles.SUPER_ADMIN]),
-  asyncHandler(subCategoryController.generateCodes)
-);
 router.get("/", asyncHandler(subCategoryController.getAllSubCategories));
 
 export default router;
