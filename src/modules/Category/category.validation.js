@@ -13,7 +13,6 @@ export const categoryUpdateSchema = {
   body: joi
     .object({
       name: joi.string().min(4).max(55).required(),
-      nameForStudent: joi.string().required(),
     })
     .required(),
   query: joi

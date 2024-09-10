@@ -1,7 +1,8 @@
 import { customAlphabet } from "nanoid";
-import { courseModel } from "../../../DB/Models/course.model";
-import { codesModel } from "../../../DB/Models/codes.model";
-import { subCategoryModel } from "../../../DB/Models/subCategory.model";
+import { courseModel } from "../../../DB/Models/course.model.js";
+import { codesModel } from "../../../DB/Models/codes.model.js";
+import { subCategoryModel } from "../../../DB/Models/subCategory.model.js";
+import { ApiFeature } from "../../utils/apiFeature.js";
 
 // +++++++++++++++++++++++++create codes+++++++++++++++++++++
 
@@ -15,7 +16,9 @@ export const creatCodes = async (req, res, next) => {
   }
   const nanoid = customAlphabet(process.env.SECRET_NANOID_ALPH, 5);
   const codes = [];
-  const startString = course.title.slice(0, 5);
+  console.log(course);
+
+  const startString = course.slug.slice(0, 5);
   for (let i = 0; i < numberOfCodes; i++) {
     const randomPart = nanoid();
     const code = startString + randomPart;
@@ -68,6 +71,35 @@ export const deleteCodes = async (req, res, next) => {
   });
 };
 
+// delete for term codes
+
+export const deleteCodesForTerm = async (req, res, next) => {
+  const { termId } = req.query;
+  const { _id } = req.user;
+  const subCategory = await subCategoryModel.findById(termId);
+
+  if (!subCategory) {
+    return next(new Error("invalid subCategory id ", { cause: 404 }));
+  }
+
+  const codes = await codesModel.findOneAndDelete({
+    "codeAssignedToCourse.courseId": courseId,
+    createdBy: _id,
+  });
+
+  if (!course) {
+    return next(
+      new Error(
+        "invalid codes for this course OR you can't delete this because you are not created it ",
+        { cause: 404 }
+      )
+    );
+  }
+  res.status(201).json({
+    message: "Done",
+  });
+};
+
 // ====================get ALL codes================
 export const getAllCodes = async (req, res, next) => {
   const apiFeaturesInistant = new ApiFeature(
@@ -85,7 +117,7 @@ export const getAllCodes = async (req, res, next) => {
 
   const codes = await apiFeaturesInistant.mongooseQuery;
   const paginationInfo = await apiFeaturesInistant.paginationInfo;
-  const all = await lectureModel.find().countDocuments();
+  const all = await codesModel.find().countDocuments();
   const totalPages = Math.ceil(all / paginationInfo.perPages);
   paginationInfo.totalPages = totalPages;
   if (codes.length) {

@@ -9,10 +9,7 @@ const categorySchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    nameForStudent: {
-      type: String,
-      required: true,
-    },
+
     slug: {
       type: String,
       required: true,

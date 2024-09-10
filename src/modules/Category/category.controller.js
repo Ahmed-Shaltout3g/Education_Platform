@@ -6,7 +6,7 @@ import { subCategoryModel } from "./../../../DB/Models/subCategory.model.js";
 
 // =============================craete category======================
 export const createCategory = async (req, res, next) => {
-  const { name, nameForStudent } = req.body;
+  const { name } = req.body;
   const { _id } = req.user;
   const isNameDublicated = await categoryModel.findOne({ name });
   if (isNameDublicated) {
@@ -30,7 +30,6 @@ export const createCategory = async (req, res, next) => {
     name,
     slug,
     createdBy: _id,
-    nameForStudent,
   };
   const createCategory = await categoryModel.create(categoryObject);
   req.failedDocument = { model: categoryModel, _id: createCategory._id };
@@ -53,7 +52,7 @@ export const updateCategory = async (req, res, next) => {
   }
 
   // ======================  change name =======================
-  const { name, nameForStudent } = req.body;
+  const { name } = req.body;
 
   if (name) {
     // new category name not same old name
@@ -91,9 +90,7 @@ export const updateCategory = async (req, res, next) => {
   }
 
   // save all changes
-  if (nameForStudent) {
-    category.nameForStudent = nameForStudent;
-  }
+
   category.updatedBy = _id;
   const saveChanged = await category.save();
 
