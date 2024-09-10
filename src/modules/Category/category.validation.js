@@ -5,7 +5,6 @@ export const categorySchema = {
   body: joi
     .object({
       name: joi.string().required(),
-      nameForStudent: joi.string().required(),
     })
     .required(),
 };
