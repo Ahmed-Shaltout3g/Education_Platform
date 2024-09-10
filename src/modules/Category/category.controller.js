@@ -3,6 +3,8 @@ import { categoryModel } from "../../../DB/Models/category.model.js";
 import cloudinary from "../../utils/cloudinaryConfigration.js";
 import slugify from "slugify";
 import { subCategoryModel } from "./../../../DB/Models/subCategory.model.js";
+import { courseModel } from "../../../DB/Models/course.model.js";
+import { lectureModel } from "../../../DB/Models/lecture.model.js";
 
 // =============================craete category======================
 export const createCategory = async (req, res, next) => {
