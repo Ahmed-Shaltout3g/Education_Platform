@@ -8,7 +8,7 @@ import { ApiFeature } from "../../utils/apiFeature.js";
 
 export const creatCodes = async (req, res, next) => {
   const { _id } = req.user;
-  const { courseId } = req.query;
+  const { codeId } = req.query;
   const { numberOfCodes, fromDate, toDate } = req.body;
   const course = await courseModel.findById(courseId);
   if (!course) {
@@ -45,49 +45,20 @@ export const creatCodes = async (req, res, next) => {
 // +++++++++++++++++++++++++delete codes+++++++++++++++++++++
 
 export const deleteCodes = async (req, res, next) => {
-  const { courseId } = req.query;
+  const { codeId } = req.query;
   const { _id } = req.user;
-  const course = await courseModel.findById(courseId);
+  const codes = await codesModel.findById(codeId);
 
-  if (!course) {
-    return next(new Error("invalid course id ", { cause: 404 }));
+  if (!codes) {
+    return next(new Error("invalid code id ", { cause: 404 }));
   }
 
-  const codes = await codesModel.findOneAndDelete({
-    "codeAssignedToCourse.courseId": courseId,
+  const codeDelete = await codesModel.findOneAndDelete({
+    _id: codeId,
     createdBy: _id,
   });
 
-  if (!course) {
-    return next(
-      new Error(
-        "invalid codes for this course OR you can't delete this because you are not created it ",
-        { cause: 404 }
-      )
-    );
-  }
-  res.status(201).json({
-    message: "Done",
-  });
-};
-
-// delete for term codes
-
-export const deleteCodesForTerm = async (req, res, next) => {
-  const { termId } = req.query;
-  const { _id } = req.user;
-  const subCategory = await subCategoryModel.findById(termId);
-
-  if (!subCategory) {
-    return next(new Error("invalid subCategory id ", { cause: 404 }));
-  }
-
-  const codes = await codesModel.findOneAndDelete({
-    "codeAssignedToCourse.courseId": courseId,
-    createdBy: _id,
-  });
-
-  if (!course) {
+  if (!codeDelete) {
     return next(
       new Error(
         "invalid codes for this course OR you can't delete this because you are not created it ",
@@ -144,9 +115,7 @@ export const creatCodesForTerm = async (req, res, next) => {
     subCategoryId: subCategoryId,
   });
   if (!coursesInSub) {
-    return next(
-      new Error("invalid courses in this subCategory ", { cause: 404 })
-    );
+    return next(new Error("No courses in this subCategory ", { cause: 404 }));
   }
   const nanoid = customAlphabet(process.env.SECRET_NANOID_ALPH, 5);
   const codes = [];
@@ -166,6 +135,7 @@ export const creatCodesForTerm = async (req, res, next) => {
     codeAssignedToCourse: coursesId,
     fromDate,
     toDate,
+    subCategoryId,
   };
   const createNewCodes = await codesModel.create(newCodesObject);
   req.failedDocument = { model: codesModel, _id: codesModel._id };

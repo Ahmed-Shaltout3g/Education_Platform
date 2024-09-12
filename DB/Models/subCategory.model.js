@@ -14,10 +14,6 @@ const subCategorySchema = new Schema(
       required: true,
       lowercase: true,
     },
-    nameForStudent: {
-      type: String,
-      required: true,
-    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "Uesr",

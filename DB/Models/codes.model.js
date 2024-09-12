@@ -12,6 +12,10 @@ const codesSchema = new Schema(
       ref: "User",
       required: true,
     },
+    subCategoryId: {
+      type: Schema.Types.ObjectId,
+      ref: "SubCategory",
+    },
 
     codeAssignedToCourse: [
       {

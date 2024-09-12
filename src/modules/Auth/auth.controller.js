@@ -80,6 +80,13 @@ export const confirmEmail = async (req, res, next) => {
   const { token } = req.params;
   const decode = decodeToken({ payload: token });
   if (decode) {
+    const confirmTwice = await userModel.findOne({
+      email: decode.email,
+      isConfirmed: true,
+    });
+    if (confirmTwice) {
+      return next(new Error("already confirmed", { cause: 400 }));
+    }
     const decryptPass = decryptText(
       decode?.password,
       process.env.CRYPTO_SECRET_KEY
@@ -90,7 +97,7 @@ export const confirmEmail = async (req, res, next) => {
       ...decode,
     });
     await confirmUser.save();
-
+    res.redirect(`${process.env.FRONTEND_URL}#/login`);
     res
       .status(200)
       .json({ message: "Confirmation success ,please try to Login" });
@@ -125,7 +132,7 @@ export const login = async (req, res, next) => {
   // await userModel.save();
   const Loggenin = await userModel.findByIdAndUpdate(
     { _id: user._id },
-    { isLogedIn: true, token: token }
+    { isLogedIn: true, token }
   );
   if (!Loggenin) {
     return next(new Error("please logged in again "));
@@ -207,6 +214,8 @@ export const resetPassword = async (req, res, next) => {
 
   user.password = newPassword;
   user.code = null;
+  user.token = null;
+
   user.changePassAt = Date.now();
   const userSave = await user.save();
 

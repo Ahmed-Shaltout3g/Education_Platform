@@ -10,7 +10,6 @@ export const subCategorySchema = {
 
         .max(55)
         .required(),
-      nameForStudent: joi.string().required(),
     })
     .required(),
   query: joi
@@ -29,7 +28,6 @@ export const subCategoryUpdateSchema = {
         .valid("first", "second", "third", "fourth", "fifth", "sixth")
         .max(55)
         .required(),
-      nameForStudent: joi.string().required(),
     })
     .required(),
   query: joi

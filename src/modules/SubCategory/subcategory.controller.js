@@ -10,7 +10,7 @@ import { lectureModel } from "../../../DB/Models/lecture.model.js";
 export const createSubCategory = async (req, res, next) => {
   // ===take category Id and check if it found or not ===
   const { categoryId } = req.query;
-  const { name, nameForStudent } = req.body;
+  const { name } = req.body;
   const { _id } = req.user;
   const category = await categoryModel.findById(categoryId);
   if (!category) {
@@ -31,7 +31,6 @@ export const createSubCategory = async (req, res, next) => {
     name,
     slug,
     categoryId,
-    nameForStudent,
     createdBy: _id,
   };
   const createSubCtegory = await subCategoryModel.create(subCategoryObject);
@@ -58,7 +57,7 @@ export const updateSubCategory = async (req, res, next) => {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
   // name equal old name
-  const { name, nameForStudent } = req.body;
+  const { name } = req.body;
   if (subCategory.name == name.toLowerCase) {
     return next(
       new Error("new name same old name please enter anothe name ", {
@@ -106,7 +105,6 @@ export const updateSubCategory = async (req, res, next) => {
   // add changes in DB
   subCategory.slug = slug;
   subCategory.name = name;
-  subCategory.nameForStudent = nameForStudent;
 
   // save changes in DB
   subCategory.updatedBy = _id;
@@ -181,15 +179,16 @@ export const getAllSubCategories = async (req, res, next) => {
     .populate({
       path: "categoryId",
       select: "name",
-    }); //get children
-  // .populate({
-  //   path: "Brand",
-  //   select: "name",
-  //   // populate: {
-  //   //   path: "products",
-  //   //   select: "title priceAfterDiscount",
-  //   // },
-  // });
+    })
+    //get children
+    .populate({
+      path: "Course",
+      select: "name",
+      populate: {
+        path: "lectures",
+        select: "title ",
+      },
+    });
   if (Subcategories.length) {
     return res.status(200).json({
       message: "Done",
