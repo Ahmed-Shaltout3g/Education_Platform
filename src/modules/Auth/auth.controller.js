@@ -7,75 +7,6 @@ import { emailTemplate } from "./../../utils/emailTemplate.js";
 import { nanoid } from "nanoid";
 import { decryptText, encryptText } from "../../utils/encryptionFunction.js";
 
-// export const signUp = async (req, res, next) => {
-//   const {
-//     fullName,
-//     email,
-//     password,
-//     repassword,
-//     phoneNumber,
-//     gender,
-//     parentsPhoneNumber,
-//     stage,
-//     grade,
-//   } = req.body;
-//   if (password == repassword) {
-//     const user = await userModel.findOne({ email });
-//     if (user) {
-//       next(new Error("Email Already Exist", { cause: 401 }));
-//     } else {
-//       // const newUser = await new userModel({
-
-//       // });
-//       const encryptPassword = encryptText(
-//         password,
-//         process.env.CRYPTO_SECRET_KEY
-//       );
-
-//       const token = generateToken({
-//         payload: {
-//           fullName,
-//           email,
-//           password: encryptPassword,
-//           gender,
-//           phoneNumber,
-//           parentsPhoneNumber,
-//           stage,
-//           grade,
-//         },
-//       });
-//       if (token) {
-//         const confirmationLink = `${req.protocol}://${req.headers.host}/auth/confirmEmail/${token}`;
-//         // const message = `<a href=${confirmationLink}>click here</a>`;
-//         const emailSent = await sendEmail({
-//           to: email,
-//           subject: "Confirmation email",
-//           message: emailTemplate({
-//             link: confirmationLink,
-//             linkData: "Click to Confirm",
-//             subject: "confirmation email ",
-//           }),
-//         });
-//         console.log(emailSent);
-//         if (emailSent) {
-//           // await newUser.save();
-//           return res
-//             .status(201)
-//             .json({ message: "Sign up success please confirm email" });
-//         } else {
-//           next(new Error("Send Email Fail please try again", { cause: 500 }));
-//         }
-//       } else {
-//         next(new Error("Token generastion fail", { cause: 400 }));
-//       }
-//     }
-//   } else {
-//     next(new Error("password must match repassword", { cause: 401 }));
-//   }
-// };
-
-// _____________________confirmEmail________________________
-
 export const signUp = async (req, res, next) => {
   const {
     fullName,
@@ -88,20 +19,62 @@ export const signUp = async (req, res, next) => {
     stage,
     grade,
   } = req.body;
-  await userModel.create({
-    fullName,
-    email,
-    password,
-    repassword,
-    phoneNumber,
-    gender,
-    parentsPhoneNumber,
-    stage,
-    grade,
-  });
+  if (password == repassword) {
+    const user = await userModel.findOne({ email });
+    if (user) {
+      next(new Error("Email Already Exist", { cause: 401 }));
+    } else {
+      // const newUser = await new userModel({
 
-  res.json({ message: "Done" });
+      // });
+      const encryptPassword = encryptText(
+        password,
+        process.env.CRYPTO_SECRET_KEY
+      );
+
+      const token = generateToken({
+        payload: {
+          fullName,
+          email,
+          password: encryptPassword,
+          gender,
+          phoneNumber,
+          parentsPhoneNumber,
+          stage,
+          grade,
+        },
+      });
+      if (token) {
+        const confirmationLink = `${req.protocol}://${req.headers.host}/auth/confirmEmail/${token}`;
+        // const message = `<a href=${confirmationLink}>click here</a>`;
+        const emailSent = await sendEmail({
+          to: email,
+          subject: "Confirmation email",
+          message: emailTemplate({
+            link: confirmationLink,
+            linkData: "Click to Confirm",
+            subject: "confirmation email ",
+          }),
+        });
+        console.log(emailSent);
+        if (emailSent) {
+          // await newUser.save();
+          return res
+            .status(201)
+            .json({ message: "Sign up success please confirm email" });
+        } else {
+          next(new Error("Send Email Fail please try again", { cause: 500 }));
+        }
+      } else {
+        next(new Error("Token generastion fail", { cause: 400 }));
+      }
+    }
+  } else {
+    next(new Error("password must match repassword", { cause: 401 }));
+  }
 };
+
+// _____________________confirmEmail________________________;
 
 export const confirmEmail = async (req, res, next) => {
   const { token } = req.params;
