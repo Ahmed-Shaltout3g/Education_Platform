@@ -8,7 +8,7 @@ import { ApiFeature } from "../../utils/apiFeature.js";
 
 export const creatCodes = async (req, res, next) => {
   const { _id } = req.user;
-  const { codeId } = req.query;
+  const { courseId } = req.query;
   const { numberOfCodes, fromDate, toDate } = req.body;
   const course = await courseModel.findById(courseId);
   if (!course) {
