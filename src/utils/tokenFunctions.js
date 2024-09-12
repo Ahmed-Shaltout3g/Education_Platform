@@ -2,10 +2,10 @@ import Jwt from "jsonwebtoken";
 export const generateToken = ({
   payload = {},
   signature = process.env.TOKEN_KEY,
-  // expiresIn = "1 hour",
+  expiresIn = "7d",
 }) => {
   if (Object.keys(payload).length) {
-    const token = Jwt.sign(payload, signature);
+    const token = Jwt.sign(payload, signature, { expiresIn });
     return token;
   }
   return false;
