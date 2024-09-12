@@ -97,7 +97,7 @@ export const confirmEmail = async (req, res, next) => {
       ...decode,
     });
     await confirmUser.save();
-    res.redirect(`${process.env.FRONTEND_URL}#/login`);
+    // res.redirect(`${process.env.FRONTEND_URL}#/login`);
     res
       .status(200)
       .json({ message: "Confirmation success ,please try to Login" });
