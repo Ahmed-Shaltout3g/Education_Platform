@@ -24,6 +24,8 @@ export const creatCodes = async (req, res, next) => {
     const code = startString + randomPart;
     codes.push(code);
   }
+
+  const courseCodes = await codesModel.findOne({ courseId });
   const newCodesObject = {
     codes,
     createdBy: _id,

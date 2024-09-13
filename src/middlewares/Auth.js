@@ -59,10 +59,24 @@ const authFunction = async (req, res, next) => {
         },
       });
 
-      user.token = refreshToken;
-      await user.save();
+      if (!refreshToken) {
+        return next(
+          new Error("token generation fail, payload canot be empty", {
+            cause: 400,
+          })
+        );
+      }
+
+      // user.token = refreshToken;
+      // await user.save();
+      await userModel.findOneAndUpdate(
+        { token: separaedToken },
+        { token: refreshToken }
+      );
+
       res.status(200).json({ message: "Refresh token", refreshToken });
     }
+    return next(new Error("invalid token", { cause: 500 }));
   }
 };
 

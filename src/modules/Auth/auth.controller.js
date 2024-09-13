@@ -132,7 +132,8 @@ export const login = async (req, res, next) => {
   // await userModel.save();
   const Loggenin = await userModel.findByIdAndUpdate(
     { _id: user._id },
-    { isLogedIn: true, token }
+    { isLogedIn: true },
+    { token: null }
   );
   if (!Loggenin) {
     return next(new Error("please logged in again "));

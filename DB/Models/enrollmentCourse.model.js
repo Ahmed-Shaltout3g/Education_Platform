@@ -8,30 +8,32 @@ const enrollmentSchema = new Schema(
       required: true,
     },
 
-    courses: {
-      coursesIds: [
-        {
-          courseId: {
-            type: Schema.Types.ObjectId,
-            ref: "Course",
-            required: true,
+    courses: [
+      {
+        coursesIds: [
+          {
+            courseId: {
+              type: Schema.Types.ObjectId,
+              ref: "Course",
+              required: true,
+            },
           },
-        },
-      ],
+        ],
 
-      fromDate: {
-        type: Date,
-        required: true,
+        fromDate: {
+          type: Date,
+          required: true,
+        },
+        toDate: {
+          type: Date,
+          required: true,
+        },
+        isPaid: {
+          type: Boolean,
+          default: false,
+        },
       },
-      toDate: {
-        type: Date,
-        required: true,
-      },
-      isPaid: {
-        type: Boolean,
-        default: false,
-      },
-    },
+    ],
   },
   { timestamps: true }
 );
