@@ -1,26 +1,34 @@
 import moment from "moment-timezone";
 import { scheduleJob } from "node-schedule";
-import { couponModel } from "./../../DB/Models/coupon.model.js";
+import { enrollmentModel } from "../../DB/Models/enrollmentCourse.model.js";
 
 export const changeCouponStatus = async () => {
-  scheduleJob('0 * * * *', async function () {
-    const coupons = await couponModel.find({ couponStatus: "Valid" });
-    for (const coupon of coupons) {
-      if (
-        moment(coupon.toDate)
-          .tz("Africa/Cairo")
-          .isBefore(moment().tz("Africa/Cairo"))
-      ) {
-        coupon.couponStatus = "Expired";
+  scheduleJob("0 * * * *", async function () {
+    const enrollments = await enrollmentModel.find();
+
+    for (const enrollment of enrollments) {
+      let updated = false;
+      for (const course of enrollment.courses) {
+        if (
+          moment(course.toDate)
+            .tz("Africa/Cairo")
+            .isBefore(moment().tz("Africa/Cairo"))
+        ) {
+          course.isPaid = false;
+          updated = true;
+        }
       }
-      await coupon.save();
+
+      // If there are changes, save the updated enrollment
+      if (updated) {
+        await enrollment.save();
+      }
     }
-    console.log(" cron job changeCouponStatus is running .....");
   });
 };
 
 export const deleteCouponExpired = async () => {
-  scheduleJob('0 0 */10 * *', async function () {
+  scheduleJob("0 0 */10 * *", async function () {
     const coupons = await couponModel.findOneAndDelete({
       couponStatus: "Expired",
     });
