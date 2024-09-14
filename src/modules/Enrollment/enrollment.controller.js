@@ -194,11 +194,14 @@ export const joinTermCourses = async (req, res, next) => {
   const { _id } = req.user;
   const { code } = req.body;
   const { subCategory } = req.query;
+
+  // Find subcategory by ID
   const findSubCategory = await subCategoryModel.findById(subCategory);
   if (!findSubCategory) {
-    return next(new Error("Invalid  SubCategory Id", { cause: 404 }));
+    return next(new Error("Invalid SubCategory Id", { cause: 404 }));
   }
 
+  // Find and update code document
   const codeDoc = await codesModel.findOneAndUpdate(
     {
       codes: code,
@@ -208,12 +211,12 @@ export const joinTermCourses = async (req, res, next) => {
     { $pull: { codes: code } },
     { new: true }
   );
-  console.log(codeDoc);
 
   if (!codeDoc) {
     return next(new Error("Invalid or expired code", { cause: 404 }));
   }
 
+  // Update code status if no codes left
   if (codeDoc.codes.length === 0) {
     codeDoc.codesStatus = "Expired";
     await codeDoc.save();
@@ -230,73 +233,75 @@ export const joinTermCourses = async (req, res, next) => {
   ) {
     return next(new Error("No course assigned to this code", { cause: 500 }));
   }
-  const codeAssignedToCourse = codeDoc.codeAssignedToCourse.courseId;
-  console.log(codeAssignedToCourse);
 
-  // check if user have enrollment or not OR have this
+  const courseUpdates = codeDoc.codeAssignedToCourse.map((course) => ({
+    coursesIds: course.courseId,
+    fromDate: codeDoc.fromDate,
+    toDate: codeDoc.toDate,
+    isPaid: true,
+  }));
+
   const user = await enrollmentModel.findOne({ userId: _id });
+
   if (user) {
-    let coursesIds = [];
-    let courseFound = false;
-    for (const course of user.courses) {
-      for (const courseIdObj of codeDoc.codeAssignedToCourse) {
-        if (courseIdObj.courseId.toString() === course.coursesIds.toString()) {
-          coursesIds.push({
-            courseId: courseIdObj.courseId || course.coursesIds,
-            fromDate: codeDoc.fromDate || course.fromDate,
-            toDate: codeDoc.toDate || course.toDate,
-            isPaid: true,
-          });
-          courseFound = true;
-        } else {
-          coursesIds.push({
-            courseId: courseIdObj.courseId,
-            fromDate: codeDoc.fromDate,
-            toDate: codeDoc.toDate,
-            isPaid: true,
-          });
-        }
-      }
-    }
-
-    user.courses = coursesIds;
-    const saveUser = await user.save();
-    if (!saveUser) {
-      return next(new Error("fail in DB", { cause: 500 }));
-    }
-    res.status(201).json({ message: "Done", courseEnroll: user });
-
-    // Add new course to enrollment
-    // if (!courseFound) {
-    //   user.courses.push({
-    //     coursesIds: [{ courseId: codeAssignedToCourse || courseId }],
-    //     fromDate: codeDoc.fromDate,
-    //     toDate: codeDoc.toDate,
-    //     isPaid: true,
-    //   });
-    //   await user.save();
-    //   return res.status(201).json({ message: "Done", courseEnroll: user });
-    // }
+    // Remove old courses that match the new codeAssignedToCourses
+    user.courses = user.courses.filter(
+      (course) =>
+        !codeDoc.codeAssignedToCourse.some(
+          (assignedCourse) =>
+            assignedCourse.courseId.toString() === course.coursesIds.toString()
+        )
+    );
+    // Update existing user's courses
+    user.courses.push(...courseUpdates);
+    await user.save();
   } else {
-    // add course to student
-    const enrollObject = {
+    // Create new enrollment for the user
+    const newEnrollment = new enrollmentModel({
       userId: _id,
-      courses: [
-        {
-          coursesIds: codeDoc.codeAssignedToCourse,
-          fromDate: codeDoc.fromDate,
-          toDate: codeDoc.toDate,
-          isPaid: true,
-        },
-      ],
-    };
+      courses: courseUpdates,
+    });
 
-    const enroll = await enrollmentModel.create(enrollObject);
-    req.failedDocument = { model: enrollmentModel, _id: enroll._id };
-    if (!enroll) {
-      return next(new Error("fail in DB", { cause: 500 }));
-    }
-
-    res.status(201).json({ message: "Done", courseEnroll: enroll });
+    await newEnrollment.save();
+    req.failedDocument = { model: enrollmentModel, _id: newEnrollment._id };
   }
+
+  res
+    .status(201)
+    .json({ message: "Done", courseEnroll: user || newEnrollment });
+};
+
+// ===============delete course from enrollMent========
+export const deleteCourseFromUser = async (req, res, next) => {
+  const { _id } = req.user;
+  const { courseId } = req.query;
+
+  // Find the user's enrollment
+  const userEnrollment = await enrollmentModel.findOne({ userId: _id });
+
+  if (!userEnrollment) {
+    return next(new Error("User did not have enrollment", { cause: 404 }));
+  }
+
+  // Filter out the course to be deleted
+  const initialCourseCount = userEnrollment.courses.length;
+  userEnrollment.courses = userEnrollment.courses.filter(
+    (course) => course.coursesIds.toString() !== courseId
+  );
+
+  // If no course was removed, return an error
+  if (userEnrollment.courses.length === initialCourseCount) {
+    return next(new Error("Course not found for the user", { cause: 404 }));
+  }
+
+  // Save the updated user enrollment
+  const saveEnrollment = await userEnrollment.save();
+  if (!saveEnrollment) {
+    return next(new Error("Fail in DB", { cause: 500 }));
+  }
+
+  return res.status(200).json({
+    message: "Course deleted successfully",
+    updatedCourses: userEnrollment.courses,
+  });
 };

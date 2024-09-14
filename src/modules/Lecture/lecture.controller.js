@@ -13,18 +13,18 @@ import { encryptText } from "../../utils/encryptionFunction.js";
 
 export const createLecture = async (req, res, next) => {
   const { title, videoURL } = req.body;
-  const { categoryId, courseId, subCategoryId } = req.query;
+  const { courseId } = req.query;
   const { _id } = req.user;
   const course = await courseModel.findById(courseId);
   if (!course) {
     return next(new Error("invalid course id ", { cause: 404 }));
   }
-  const subCategory = await subCategoryModel.findById(subCategoryId);
+  const subCategory = await subCategoryModel.findById(courseId.subCategoryId);
   if (!subCategory) {
     return next(new Error("invalid subCategory id ", { cause: 404 }));
   }
 
-  const category = await categoryModel.findById(categoryId);
+  const category = await categoryModel.findById(courseId.categoryId);
   if (!category) {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
@@ -57,8 +57,8 @@ export const createLecture = async (req, res, next) => {
     videoURL: encryptVideoURL,
     customId,
     photo: { secure_url, public_id },
-    categoryId,
-    subCategoryId,
+    categoryId: courseId.categoryId,
+    subCategoryId: courseId.subCategoryId,
     courseId,
     createdBy: _id,
     teacher: _id,
