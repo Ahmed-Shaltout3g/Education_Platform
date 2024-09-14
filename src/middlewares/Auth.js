@@ -38,14 +38,16 @@ const authFunction = async (req, res, next) => {
     next();
   } catch (error) {
     // refresh token
-    console.log(error);
 
-    if (error.name === "TokenExpiredError") {
+    if (
+      error.name === "TokenExpiredError" ||
+      error === "TokenExpiredError: jwt expired"
+    ) {
       console.log(error);
 
       const user = await userModel.findOne({ token: separaedToken });
       if (!user) {
-        return next(new Error("invalid token", { cause: 401 }));
+        return next(new Error("wrong  token", { cause: 401 }));
       }
 
       const refreshToken = generateToken({
@@ -76,7 +78,7 @@ const authFunction = async (req, res, next) => {
 
       res.status(200).json({ message: "Refresh token", refreshToken });
     }
-    return next(new Error("invalid token", { cause: 500 }));
+    return next(new Error("invalid token", error, { cause: 500 }));
   }
 };
 

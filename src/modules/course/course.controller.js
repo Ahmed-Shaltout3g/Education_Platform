@@ -10,16 +10,14 @@ import { lectureModel } from "../../../DB/Models/lecture.model.js";
 
 export const createCourse = async (req, res, next) => {
   const { _id } = req.user;
-  const { subCategoryId, categoryId } = req.query;
+  const { subCategoryId } = req.query;
   const { name } = req.body;
   const subCategory = await subCategoryModel.findById(subCategoryId);
   if (!subCategory) {
     return next(new Error("invalid subCategory id ", { cause: 404 }));
   }
 
-  const category = await categoryModel.findById(
-    categoryId || subCategory.categoryId
-  );
+  const category = await categoryModel.findById(subCategory.categoryId);
   if (!category) {
     return next(new Error("invalid Category id ", { cause: 404 }));
   }
@@ -47,7 +45,7 @@ export const createCourse = async (req, res, next) => {
     name,
     slug,
     customId,
-    categoryId: categoryId || subCategory.categoryId,
+    categoryId: subCategory.categoryId,
     subCategoryId,
     photo: { secure_url, public_id },
     createdBy: _id,

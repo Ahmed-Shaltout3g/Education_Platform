@@ -10,7 +10,6 @@ export const addCourseSchema = {
   query: joi
     .object({
       subCategoryId: generalFields._id,
-      categoryId: generalFields._id,
     })
     .required(),
 };
