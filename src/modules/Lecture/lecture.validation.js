@@ -10,8 +10,6 @@ export const addLectureScheme = {
     .required(),
   query: joi
     .object({
-      categoryId: generalFields._id,
-      subCategoryId: generalFields._id,
       courseId: generalFields._id,
     })
     .required()
