@@ -19,12 +19,12 @@ export const createLecture = async (req, res, next) => {
   if (!course) {
     return next(new Error("invalid course id ", { cause: 404 }));
   }
-  const subCategory = await subCategoryModel.findById(courseId.subCategoryId);
+  const subCategory = await subCategoryModel.findById(course.subCategoryId);
   if (!subCategory) {
     return next(new Error("invalid subCategory id ", { cause: 404 }));
   }
 
-  const category = await categoryModel.findById(courseId.categoryId);
+  const category = await categoryModel.findById(course.categoryId);
   if (!category) {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
@@ -57,8 +57,8 @@ export const createLecture = async (req, res, next) => {
     videoURL: encryptVideoURL,
     customId,
     photo: { secure_url, public_id },
-    categoryId: courseId.categoryId,
-    subCategoryId: courseId.subCategoryId,
+    categoryId: course.categoryId,
+    subCategoryId: course.subCategoryId,
     courseId,
     createdBy: _id,
     teacher: _id,
