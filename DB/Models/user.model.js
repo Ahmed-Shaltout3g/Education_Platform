@@ -53,7 +53,7 @@ const userSchema = new Schema(
     },
     grade: {
       type: String,
-      default: "Third",
+
       enum: ["first", "second", "third", "fourth", "fifth", "sixth"],
     },
     isConfirmed: {

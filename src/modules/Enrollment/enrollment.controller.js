@@ -188,7 +188,7 @@ export const join = async (req, res, next) => {
   }
 };
 
-// ====================join term courses=================
+// ====================join term courses========================
 
 export const joinTermCourses = async (req, res, next) => {
   const { _id } = req.user;
@@ -271,7 +271,7 @@ export const joinTermCourses = async (req, res, next) => {
     .json({ message: "Done", courseEnroll: user || newEnrollment });
 };
 
-// ===============delete course from enrollMent========
+// ===============delete course from enrollMent=================
 export const deleteCourseFromUser = async (req, res, next) => {
   const { _id } = req.user;
   const { courseId } = req.query;

@@ -35,6 +35,31 @@ export const signUpVaildation = {
         .required(),
     }),
 };
+export const addTeacherValidation = {
+  body: joi
+    .object()
+    .required()
+    .keys({
+      fullName: joi.string().min(3).max(1000).required(),
+      email: generalFields.email,
+      password: generalFields.password,
+      repassword: joi.string().valid(joi.ref("password")).required(),
+      gender: joi.string().valid("male", "female").required(),
+      phoneNumber: joi
+        .string()
+        .regex(/^\+20[0-9]{10}$/)
+        .messages({
+          "string.pattern.base": "enter valid phone number",
+        })
+        .required(),
+      stage: joi
+        .string()
+        .valid("primary", "preparatory", "secondary")
+        .required(),
+      moreInfo: joi.string().min(3).max(1000).required(),
+      subjecTeacher: joi.string().min(3).max(1000).required(),
+    }),
+};
 
 export const confirmationEmailValidation = () => {
   params: joi.object().required().keys({
@@ -59,4 +84,16 @@ export const resetPassVaildation = {
   body: joi.object().required().keys({
     newPassword: generalFields.password,
   }),
+};
+
+export const deleteTeacherValidation = {
+  body: joi.object().required().keys({
+    email: generalFields.email,
+  }),
+  query: joi
+    .object({
+      teacherId: generalFields._id,
+    })
+    .required()
+    .options({ presence: "required" }),
 };

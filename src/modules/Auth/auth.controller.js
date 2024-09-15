@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { emailTemplate } from "./../../utils/emailTemplate.js";
 import { nanoid } from "nanoid";
 import { decryptText, encryptText } from "../../utils/encryptionFunction.js";
+import { systemRoles } from "../../utils/systemRoles.js";
 
 export const signUp = async (req, res, next) => {
   const {
@@ -253,6 +254,64 @@ export const uploadProfilePicture = async (req, res, next) => {
   }
   res.status(200).json({ message: "Done " });
 };
+
+// ======================add teacher=======================
+export const addTeacher = async (req, res, next) => {
+  const { _id } = req.user;
+  const {
+    fullName,
+    email,
+    password,
+    repassword,
+    phoneNumber,
+    gender,
+    subjecTeacher,
+    moreInfo,
+    stage,
+  } = req.body;
+
+  if (password == repassword) {
+    const user = await userModel.findOne({ email });
+    if (user) {
+      next(new Error("Email Already Exist", { cause: 401 }));
+    } else {
+      const confirmUser = new userModel({
+        fullName,
+        email,
+        password,
+        phoneNumber,
+        gender,
+        subjecTeacher,
+        moreInfo,
+        stage,
+        isConfirmed: true,
+        role: systemRoles.TEACHER,
+      });
+      await confirmUser.save();
+      res.status(200).json({ message: "Done,please try to Login" });
+    }
+  } else {
+    next(new Error("password must match repassword", { cause: 401 }));
+  }
+};
+
+// ================deleteTeacher==================
+export const deleteTeacher = async (req, res, next) => {
+  const { _id } = req.user;
+  const { email } = req.body;
+  const { teacherId } = req.query;
+  const user = await userModel.findOneAndDelete({
+    email: email,
+    _id: teacherId,
+    role: "Teacher",
+  });
+
+  if (!user) {
+    return next(new Error("Invalid Email Or Id ", { cause: 401 }));
+  }
+  res.status(200).json({ message: "Done" });
+};
+
 // _________________________get user data___________________
 
 export const userData = async (req, res, next) => {

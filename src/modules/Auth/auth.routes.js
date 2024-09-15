@@ -6,6 +6,7 @@ import { validationCoreFunction } from "../../middlewares/validation.js";
 import { Auth, authorization } from "../../middlewares/Auth.js";
 import { myMulter } from "../../services/multer.js";
 import allowedExtensions from "../../utils/allowedExtention.js";
+import { systemRoles } from "../../utils/systemRoles.js";
 
 const router = Router();
 router.post(
@@ -40,6 +41,20 @@ router.patch(
   Auth(),
   myMulter().single("image"),
   asyncHandler(allRoutes.uploadProfilePicture)
+);
+router.post(
+  "/addTeacher",
+  Auth(),
+  authorization([systemRoles.ADMIN]),
+  validationCoreFunction(validations.addTeacherValidation),
+  asyncHandler(allRoutes.addTeacher)
+);
+router.delete(
+  "/deleteTeacher",
+  Auth(),
+  authorization([systemRoles.ADMIN]),
+  validationCoreFunction(validations.deleteTeacherValidation),
+  asyncHandler(allRoutes.deleteTeacher)
 );
 
 export default router;

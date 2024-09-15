@@ -1,38 +1,30 @@
 import moment from "moment-timezone";
 import { scheduleJob } from "node-schedule";
 import { enrollmentModel } from "../../DB/Models/enrollmentCourse.model.js";
+import { codesModel } from "./../../DB/Models/codes.model.js";
 
-export const changeCouponStatus = async () => {
-  scheduleJob("0 * * * *", async function () {
-    const enrollments = await enrollmentModel.find();
+export const changeCourseExpired = async () => {
+  scheduleJob("0 3 * * *", async function () {
+    const now = new Date();
 
-    for (const enrollment of enrollments) {
-      let updated = false;
-      for (const course of enrollment.courses) {
-        if (
-          moment(course.toDate)
-            .tz("Africa/Cairo")
-            .isBefore(moment().tz("Africa/Cairo"))
-        ) {
-          course.isPaid = false;
-          updated = true;
-        }
-      }
+    const result = await enrollmentModel.updateMany(
+      { "courses.toDate": { $lte: now }, "courses.isPaid": true },
+      { $set: { "courses.$[elem].isPaid": false } },
+      { arrayFilters: [{ "elem.toDate": { $lte: now }, "elem.isPaid": true }] }
+    );
 
-      // If there are changes, save the updated enrollment
-      if (updated) {
-        await enrollment.save();
-      }
-    }
+    console.log("CronJop Expired courses updated successfully.");
   });
 };
 
-export const deleteCouponExpired = async () => {
-  scheduleJob("0 0 */10 * *", async function () {
-    const coupons = await couponModel.findOneAndDelete({
-      couponStatus: "Expired",
+export const deletecodesExpired = async () => {
+  scheduleJob("0 3 * * *", async function () {
+    const now = new Date();
+
+    const codes = await codesModel.findOneAndDelete({
+      toDate: { $lte: now },
     });
 
-    console.log(" cron job deleteCouponExpried is running .....");
+    console.log(" cron job deleteCodesExpried is running .....");
   });
 };

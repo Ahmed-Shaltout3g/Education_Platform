@@ -1,6 +1,6 @@
 import { connectionDB } from "../../DB/connection.js";
 import * as allRoutes from "../modules/index.routes.js";
-// import { changeCouponStatus, deleteCouponExpired } from "./crons.js";
+import { changeCourseExpired, deletecodesExpired } from "./crons.js";
 import { globalResponse } from "./errorHandling.js";
 import cors from "cors";
 
@@ -27,6 +27,8 @@ export const initatApp = (express, app) => {
   });
   app.use(globalResponse);
   // crons
+  changeCourseExpired();
+  deletecodesExpired();
 
   app.listen(port, () =>
     console.log("> Server is up and running on port : " + port)
