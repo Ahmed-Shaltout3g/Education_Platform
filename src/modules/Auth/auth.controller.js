@@ -7,6 +7,7 @@ import { emailTemplate } from "./../../utils/emailTemplate.js";
 import { nanoid } from "nanoid";
 import { decryptText, encryptText } from "../../utils/encryptionFunction.js";
 import { systemRoles } from "../../utils/systemRoles.js";
+import { courseModel } from "../../../DB/Models/course.model.js";
 
 export const signUp = async (req, res, next) => {
   const {
@@ -266,15 +267,20 @@ export const addTeacher = async (req, res, next) => {
     phoneNumber,
     gender,
     subjecTeacher,
-    moreInfo,
     stage,
   } = req.body;
+  const { courseId } = req.query;
 
   if (password == repassword) {
     const user = await userModel.findOne({ email });
     if (user) {
       next(new Error("Email Already Exist", { cause: 401 }));
     } else {
+      const course = await courseModel.findById(courseId);
+      if (!course) {
+        return next(new Error("invalid Course Id", { cause: 401 }));
+      }
+
       const confirmUser = new userModel({
         fullName,
         email,
@@ -282,7 +288,7 @@ export const addTeacher = async (req, res, next) => {
         phoneNumber,
         gender,
         subjecTeacher,
-        moreInfo,
+        courseId,
         stage,
         isConfirmed: true,
         role: systemRoles.TEACHER,
@@ -310,6 +316,27 @@ export const deleteTeacher = async (req, res, next) => {
     return next(new Error("Invalid Email Or Id ", { cause: 401 }));
   }
   res.status(200).json({ message: "Done" });
+};
+
+// get all teachers
+export const getTeacher = async (req, res, next) => {
+  const users = await userModel.find({ role: "Teacher" }).populate({
+    path: "courseId",
+    select: "name slug createdAt",
+  });
+  if (!users) {
+    return next(new Error("fail in DB", { cause: 500 }));
+  }
+
+  if (users.length) {
+    return res.status(200).json({
+      message: "Done",
+      users,
+    });
+  }
+  res.status(200).json({
+    message: "No Items",
+  });
 };
 
 // _________________________get user data___________________

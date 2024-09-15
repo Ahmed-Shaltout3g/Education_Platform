@@ -72,6 +72,11 @@ const userSchema = new Schema(
     changePassAt: {
       type: Date,
     },
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
     date_joined: {
       type: Date,
     },
@@ -82,12 +87,15 @@ const userSchema = new Schema(
     subjecTeacher: {
       type: String,
     },
-    moreInfo: {
-      type: String,
-    },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+userSchema.virtual("teacher", {
+  ref: "Lecture",
+  localField: "_id",
+  foreignField: "teacher",
+});
 userSchema.pre("save", function (next, doc) {
   this.password = hashingPassword(
     this.password,

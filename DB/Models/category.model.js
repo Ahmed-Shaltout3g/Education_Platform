@@ -17,12 +17,12 @@ const categorySchema = new Schema(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
       required: true,
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
@@ -34,11 +34,16 @@ categorySchema.virtual("subCategory", {
   foreignField: "categoryId",
 });
 
-// categorySchema.virtual("Brands", {
-//   ref: "brand",
-//   localField: "_id",
-//   foreignField: "categoryId",
-// });
+categorySchema.virtual("Course", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "categoryId",
+});
+categorySchema.virtual("lecture", {
+  ref: "Lecture",
+  localField: "_id",
+  foreignField: "categoryId",
+});
 
 export const categoryModel =
   model.Category || model("Category", categorySchema);

@@ -26,21 +26,21 @@ const lectureSchema = new Schema(
     customId: String,
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
       required: true,
     },
     teacher: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
       required: true,
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
     },
     deletedBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
     },
     categoryId: {
       type: Schema.Types.ObjectId,
@@ -54,7 +54,7 @@ const lectureSchema = new Schema(
     },
     courseId: {
       type: Schema.Types.ObjectId,
-      ref: "Cource",
+      ref: "Course",
       required: true,
     },
 
@@ -66,7 +66,7 @@ const lectureSchema = new Schema(
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 export const lectureModel = model.Lecture || model("Lecture", lectureSchema);

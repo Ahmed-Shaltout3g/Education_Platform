@@ -5,6 +5,7 @@ import cloudinary from "../../utils/cloudinaryConfigration.js";
 import { categoryModel } from "../../../DB/Models/category.model.js";
 import { courseModel } from "../../../DB/Models/course.model.js";
 import { lectureModel } from "../../../DB/Models/lecture.model.js";
+import { ApiFeature } from "../../utils/apiFeature.js";
 
 // ========================create brand==================
 
@@ -191,27 +192,89 @@ export const deleteCourse = async (req, res, next) => {
 
 //================== get all courses===================
 
+// export const getAllCourses = async (req, res, next) => {
+//   const courses = await courseModel
+//     .find()
+//     .populate({
+//       path: "categoryId",
+//       select: "name",
+//     })
+//     .populate({
+//       path: "subCategoryId",
+//       select: "name",
+//     })
+//     .populate({
+//       path: "lectures",
+//     });
+//   if (courses.length) {
+//     return res.status(200).json({
+//       message: "Done",
+//       courses,
+//     });
+//   }
+//   res.status(200).json({
+//     message: "No Items",
+//   });
+// };
+
+// export const getCategoryDetails = async (req, res, next) => {
+//   const { categoryId } = req.params;
+//   const category = await categoryModel.findById(categoryId).populate({
+//     path: "subCategory",
+//     select: "name",
+//     populate: {
+//       path: "Course",
+//       select: "name",
+//       populate: {
+//         path: "lectures",
+//         select: "title photo",
+//       },
+//     },
+//   });
+
+//   if (category) {
+//     return res.status(200).json({
+//       message: "Done",
+//       category,
+//     });
+//   }
+//   return next(new Error("Invalid category Id ", { cause: 500 }));
+// };
+
 export const getAllCourses = async (req, res, next) => {
-  const courses = await courseModel
-    .find()
+  const apiFeaturesInistant = new ApiFeature(courseModel.find(), req.query)
+    .paginated()
+    .sort()
+    .select()
+    .filters()
+    .search();
+
+  const courses = await apiFeaturesInistant.mongooseQuery
     .populate({
       path: "categoryId",
-      select: "name",
+      select: "name slug ",
     })
     .populate({
       path: "subCategoryId",
-      select: "name",
+      select: "name slug ",
     })
+
     .populate({
-      path: "lectures",
+      path: "teacher",
+      select: "fullName moreInfo subjecTeacher phoneNumber stage",
     });
+  const paginationInfo = await apiFeaturesInistant.paginationInfo;
+  const all = await courseModel.find().countDocuments();
+  const totalPages = Math.ceil(all / paginationInfo.perPages);
+  paginationInfo.totalPages = totalPages;
   if (courses.length) {
     return res.status(200).json({
       message: "Done",
-      courses,
+      data: courses,
+      paginationInfo,
     });
   }
   res.status(200).json({
-    message: "No Items",
+    message: "No Items yet",
   });
 };

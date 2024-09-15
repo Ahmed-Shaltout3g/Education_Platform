@@ -173,14 +173,14 @@ export const getAllCategory = async (req, res, next) => {
   const categories = await categoryModel.find().populate({
     path: "subCategory",
     select: "name",
-    // populate: {
-    //   path: "Brand",
-    //   select: "name",
-    //   populate: {
-    //     path: "products",
-    //     select: "title priceAfterDiscount",
-    //   },
-    // },
+    populate: {
+      path: "Course",
+      select: "name",
+      populate: {
+        path: "lectures",
+        select: "title photo",
+      },
+    },
   });
 
   if (categories.length) {
@@ -192,4 +192,27 @@ export const getAllCategory = async (req, res, next) => {
   res.status(200).json({
     message: "No Items",
   });
+};
+export const getCategoryDetails = async (req, res, next) => {
+  const { categoryId } = req.params;
+  const category = await categoryModel.findById(categoryId).populate({
+    path: "subCategory",
+    select: "name",
+    populate: {
+      path: "Course",
+      select: "name",
+      populate: {
+        path: "lectures",
+        select: "title photo",
+      },
+    },
+  });
+
+  if (category) {
+    return res.status(200).json({
+      message: "Done",
+      category,
+    });
+  }
+  return next(new Error("Invalid category Id ", { cause: 500 }));
 };

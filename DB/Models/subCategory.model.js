@@ -16,12 +16,12 @@ const subCategorySchema = new Schema(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
       required: true,
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
     },
     categoryId: {
       type: Schema.Types.ObjectId,

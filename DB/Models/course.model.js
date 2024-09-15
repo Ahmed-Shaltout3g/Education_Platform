@@ -38,7 +38,7 @@ const courseSchema = new Schema(
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
-      ref: "Uesr",
+      ref: "User",
     },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
@@ -46,11 +46,6 @@ const courseSchema = new Schema(
 
 courseSchema.virtual("lectures", {
   ref: "Lecture",
-  localField: "_id",
-  foreignField: "courseId",
-});
-courseSchema.virtual("Courses", {
-  ref: "course",
   localField: "_id",
   foreignField: "courseId",
 });

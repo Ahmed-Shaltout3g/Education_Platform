@@ -249,7 +249,23 @@ export const getAllLectures = async (req, res, next) => {
     .filters()
     .search();
 
-  const lectures = await apiFeaturesInistant.mongooseQuery;
+  const lectures = await apiFeaturesInistant.mongooseQuery
+    .populate({
+      path: "categoryId",
+      select: "name slug ",
+    })
+    .populate({
+      path: "subCategoryId",
+      select: "name slug ",
+    })
+    .populate({
+      path: "courseId",
+      select: "name",
+    })
+    .populate({
+      path: "teacher",
+      select: "fullName moreInfo subjecTeacher phoneNumber stage",
+    });
   const paginationInfo = await apiFeaturesInistant.paginationInfo;
   const all = await lectureModel.find().countDocuments();
   const totalPages = Math.ceil(all / paginationInfo.perPages);

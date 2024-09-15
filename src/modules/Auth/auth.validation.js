@@ -56,7 +56,6 @@ export const addTeacherValidation = {
         .string()
         .valid("primary", "preparatory", "secondary")
         .required(),
-      moreInfo: joi.string().min(3).max(1000).required(),
       subjecTeacher: joi.string().min(3).max(1000).required(),
     }),
 };

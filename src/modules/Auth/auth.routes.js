@@ -57,4 +57,6 @@ router.delete(
   asyncHandler(allRoutes.deleteTeacher)
 );
 
+router.get("/teachers", asyncHandler(allRoutes.getTeacher));
+
 export default router;
