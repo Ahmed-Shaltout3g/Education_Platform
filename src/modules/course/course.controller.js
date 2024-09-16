@@ -261,7 +261,11 @@ export const getAllCourses = async (req, res, next) => {
 
     .populate({
       path: "teacher",
-      select: "fullName moreInfo subjecTeacher phoneNumber stage",
+      select: "fullName moreInfo subjecTeacher gender phoneNumber stage",
+    })
+    .populate({
+      path: "lectures",
+      select: "title",
     });
   const paginationInfo = await apiFeaturesInistant.paginationInfo;
   const all = await courseModel.find().countDocuments();
