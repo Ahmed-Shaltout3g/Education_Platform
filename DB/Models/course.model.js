@@ -50,4 +50,10 @@ courseSchema.virtual("lectures", {
   foreignField: "courseId",
 });
 
+courseSchema.virtual("enrolledUsers", {
+  ref: "Enrollment",
+  localField: "_id",
+  foreignField: "courses.coursesIds",
+});
+
 export const courseModel = model.Course || model("Course", courseSchema);

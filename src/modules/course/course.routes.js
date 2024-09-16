@@ -39,5 +39,6 @@ router.delete(
   asyncHandler(courseController.deleteCourse)
 );
 router.get("/", asyncHandler(courseController.getAllCourses));
+router.get("/usersJoin", asyncHandler(courseController.getAllUsersForCourse));
 
 export default router;

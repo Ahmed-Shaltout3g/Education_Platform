@@ -96,6 +96,12 @@ userSchema.virtual("teacher", {
   localField: "_id",
   foreignField: "teacher",
 });
+userSchema.virtual("enrollments", {
+  ref: "Enrollment",
+  localField: "_id",
+  foreignField: "userId",
+});
+
 userSchema.pre("save", function (next, doc) {
   this.password = hashingPassword(
     this.password,

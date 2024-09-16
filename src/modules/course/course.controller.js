@@ -278,3 +278,39 @@ export const getAllCourses = async (req, res, next) => {
     message: "No Items yet",
   });
 };
+
+// get all user joine to this course
+
+export const getAllUsersForCourse = async (req, res, next) => {
+  const { courseId } = req.query;
+
+  // Find the course and populate enrolled users
+  const course = await courseModel.findById(courseId).populate({
+    path: "enrolledUsers",
+    populate: {
+      path: "userId",
+      select: "fullName parentsPhoneNumber email phoneNumber",
+    },
+  });
+
+  if (!course) {
+    return res.status(404).json({
+      message: "Course not found",
+    });
+  }
+
+  // Extract the enrolled users
+  const enrolledUsers = course.enrolledUsers.map(
+    (enrollment) => enrollment.userId
+  );
+
+  if (!enrolledUsers) {
+    return res.status(200).json({
+      message: "No user",
+    });
+  }
+  res.status(200).json({
+    message: "Enrolled users fetched successfully",
+    data: enrolledUsers,
+  });
+};
