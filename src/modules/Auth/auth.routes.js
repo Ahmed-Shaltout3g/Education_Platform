@@ -57,6 +57,8 @@ router.delete(
   asyncHandler(allRoutes.deleteTeacher)
 );
 
+router.patch("/update", asyncHandler(allRoutes.updateUser));
+
 router.get("/teachers", asyncHandler(allRoutes.getTeacher));
 
 export default router;

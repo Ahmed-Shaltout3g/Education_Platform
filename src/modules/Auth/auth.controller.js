@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import { decryptText, encryptText } from "../../utils/encryptionFunction.js";
 import { systemRoles } from "../../utils/systemRoles.js";
 import { courseModel } from "../../../DB/Models/course.model.js";
+import { ApiFeature } from "../../utils/apiFeature.js";
 
 export const signUp = async (req, res, next) => {
   const {
@@ -243,10 +244,10 @@ export const uploadProfilePicture = async (req, res, next) => {
   const { secure_url, public_id } = await cloudinary.uploader.upload(
     req.file.path,
     {
-      folder: `${process.env.ONLINE_PLATFORM_FOLDER}/Profile/${user.fullName}`,
+      folder: `${process.env.ONLINE_PLATFORM_FOLDER}/Profile/${user.fullName}/${user.email}`,
     }
   );
-  req.ImagePath = `${process.env.ONLINE_PLATFORM_FOLDER}/Profile/${user.fullName}`;
+  req.ImagePath = `${process.env.ONLINE_PLATFORM_FOLDER}/Profile/${user.fullName}/${user.email}`;
 
   user.profileImage = { secure_url, public_id };
   const DBuser = await userModel.save();
@@ -254,6 +255,47 @@ export const uploadProfilePicture = async (req, res, next) => {
     return next(new Error("upload fail ,please try again", { cause: 500 }));
   }
   res.status(200).json({ message: "Done " });
+};
+
+// ====================update user and teacher============
+
+export const updateUser = async (req, res, next) => {
+  const { userId } = req.query;
+  const { fullName, stage, subjecTeacher } = req.body;
+
+  const user = await userModel.findById(userId);
+  if (!user) {
+    return next(new Error("invalid user id please try again ", { cause: 404 }));
+  }
+  const updateFields = {};
+
+  // Update user fields if they are provided in the request body
+  if (fullName) {
+    updateFields.fullName = fullName;
+  }
+  if (stage) {
+    updateFields.stage = stage;
+  }
+  if (subjecTeacher) {
+    updateFields.subjecTeacher = subjecTeacher;
+  }
+
+  updateFields.updatedAt = new Date();
+
+  const updatedUser = await userModel.findByIdAndUpdate(
+    userId,
+    { $set: updateFields },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    return next(new Error("fail", { cause: 401 }));
+  }
+
+  res.status(200).json({
+    message: "User updated successfully",
+    user: updatedUser,
+  });
 };
 
 // ======================add teacher=======================
@@ -319,23 +361,35 @@ export const deleteTeacher = async (req, res, next) => {
 };
 
 // get all teachers
+
 export const getTeacher = async (req, res, next) => {
-  const users = await userModel.find({ role: "Teacher" }).populate({
+  const apiFeaturesInistant = new ApiFeature(
+    userModel.find({ role: systemRoles.TEACHER }),
+    req.query
+  )
+    .paginated()
+    .sort()
+    .select()
+    .filters()
+    .search();
+
+  const teachers = await apiFeaturesInistant.mongooseQuery.populate({
     path: "courseId",
     select: "name slug createdAt",
   });
-  if (!users) {
-    return next(new Error("fail in DB", { cause: 500 }));
-  }
-
-  if (users.length) {
+  const paginationInfo = await apiFeaturesInistant.paginationInfo;
+  const all = await userModel.find().countDocuments();
+  const totalPages = Math.ceil(all / paginationInfo.perPages);
+  paginationInfo.totalPages = totalPages;
+  if (teachers.length) {
     return res.status(200).json({
       message: "Done",
-      users,
+      data: teachers,
+      paginationInfo,
     });
   }
   res.status(200).json({
-    message: "No Items",
+    message: "No Items yet",
   });
 };
 

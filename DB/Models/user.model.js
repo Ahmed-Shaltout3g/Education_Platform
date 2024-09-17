@@ -75,13 +75,13 @@ const userSchema = new Schema(
     courseId: {
       type: Schema.Types.ObjectId,
       ref: "Course",
-      required: true,
     },
-    date_joined: {
-      type: Date,
-    },
+
     token: {
       type: String,
+    },
+    updatedAt: {
+      type: Date,
     },
     // teacher
     subjecTeacher: {
