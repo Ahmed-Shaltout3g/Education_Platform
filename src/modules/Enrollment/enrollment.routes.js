@@ -20,10 +20,10 @@ router.delete(
   asyncHandler(enrollController.deleteCourseFromUser)
 );
 
-// router.get(
-//   "/",
+router.get(
+  "/",
 
-//   asyncHandler(codeslectureController.getAllCodes)
-// );
+  asyncHandler(enrollController.getUserEnrollments)
+);
 
 export default router;

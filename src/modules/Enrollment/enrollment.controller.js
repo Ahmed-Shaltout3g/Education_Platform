@@ -1,5 +1,6 @@
 import { codesModel } from "../../../DB/Models/codes.model.js";
 import { enrollmentModel } from "../../../DB/Models/enrollmentCourse.model.js";
+import { ApiFeature } from "../../utils/apiFeature.js";
 import { courseModel } from "./../../../DB/Models/course.model.js";
 import { subCategoryModel } from "./../../../DB/Models/subCategory.model.js";
 
@@ -303,5 +304,42 @@ export const deleteCourseFromUser = async (req, res, next) => {
   return res.status(200).json({
     message: "Course deleted successfully",
     updatedCourses: userEnrollment.courses,
+  });
+};
+
+export const getUserEnrollments = async (req, res, next) => {
+  const apiFeaturesInistant = new ApiFeature(enrollmentModel.find(), req.query)
+    .paginated()
+    .sort()
+    .select()
+    .filters()
+    .search();
+
+  const enrollments = await apiFeaturesInistant.mongooseQuery
+    .populate({
+      path: "courses.coursesIds",
+      select: "name slug photo teacher",
+      populate: {
+        path: "teacher",
+        select: "fullName phoneNumber photo subjecTeacher",
+      },
+    })
+    .populate({
+      path: "userId",
+      select: "fullName email",
+    });
+  const paginationInfo = await apiFeaturesInistant.paginationInfo;
+  const all = await enrollmentModel.find().countDocuments();
+  const totalPages = Math.ceil(all / paginationInfo.perPages);
+  paginationInfo.totalPages = totalPages;
+  if (enrollments.length) {
+    return res.status(200).json({
+      message: "Done",
+      data: enrollments,
+      paginationInfo,
+    });
+  }
+  res.status(200).json({
+    message: "No Items yet",
   });
 };
