@@ -60,9 +60,9 @@ export class ApiFeature {
     this.queryData.search
       ? this.mongooseQuery.find({
           $or: [
+            { name: { $regex: this.queryData.search, $options: "i" } },
             { title: { $regex: this.queryData.search, $options: "i" } },
-            { name: { $regex: this.queryData.search, $options: "i" } },
-            { name: { $regex: this.queryData.search, $options: "i" } },
+            { slug: { $regex: this.queryData.search, $options: "i" } },
           ],
         })
       : "";
