@@ -9,7 +9,7 @@ import { decryptText, encryptText } from "../../utils/encryptionFunction.js";
 import { systemRoles } from "../../utils/systemRoles.js";
 import { courseModel } from "../../../DB/Models/course.model.js";
 import { ApiFeature } from "../../utils/apiFeature.js";
-
+import cloudinary from "../../utils/cloudinaryConfigration.js";
 export const signUp = async (req, res, next) => {
   const {
     fullName,
@@ -249,9 +249,13 @@ export const uploadProfilePicture = async (req, res, next) => {
   );
   req.ImagePath = `${process.env.ONLINE_PLATFORM_FOLDER}/Profile/${user.fullName}/${user.email}`;
 
-  user.profileImage = { secure_url, public_id };
-  const DBuser = await userModel.save();
-  if (!DBuser) {
+  const updatedUser = await userModel.findByIdAndUpdate(
+    { _id },
+    { profileImage: { secure_url, public_id } },
+    { new: true }
+  );
+
+  if (!updatedUser) {
     return next(new Error("upload fail ,please try again", { cause: 500 }));
   }
   res.status(200).json({ message: "Done " });
@@ -363,10 +367,7 @@ export const deleteTeacher = async (req, res, next) => {
 // get all teachers
 
 export const getTeacher = async (req, res, next) => {
-  const apiFeaturesInistant = new ApiFeature(
-    userModel.find({ role: systemRoles.TEACHER }),
-    req.query
-  )
+  const apiFeaturesInistant = new ApiFeature(userModel.find(), req.query)
     .paginated()
     .sort()
     .select()
