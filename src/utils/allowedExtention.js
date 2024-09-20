@@ -1,6 +1,6 @@
 const allowedExtensions = {
   Image: ["image/png", "image/jpeg", "image/gif"],
-  Files: ["application/pdf", "application/javascript"],
+  Files: ["application/pdf"],
   Videos: ["video/mp4"],
 };
 

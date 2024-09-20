@@ -16,14 +16,8 @@ const assignmentSchema = new Schema(
       required: true,
     },
     pdf: {
-      secure_url: {
-        type: String,
-        required: true,
-      },
-      public_id: {
-        type: String,
-        required: true,
-      },
+      secure_url: { type: String, required: true },
+      public_id: { type: String, required: true },
     },
     courseId: {
       type: Schema.Types.ObjectId,
@@ -35,10 +29,7 @@ const assignmentSchema = new Schema(
       ref: "User",
       required: true,
     },
-    dueDate: {
-      type: Date,
-      required: true,
-    },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -47,5 +38,5 @@ const assignmentSchema = new Schema(
   { timestamps: true }
 );
 
-export const AassignmentModel =
+export const AssignmentModel =
   model.Assignment || model("Assignment", assignmentSchema);

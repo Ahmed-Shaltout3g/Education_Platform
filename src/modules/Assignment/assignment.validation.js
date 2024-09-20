@@ -1,16 +1,16 @@
 import joi from "joi";
 import { generalFields } from "../../middlewares/validation.js";
 
-export const addLectureScheme = {
+export const addAssignmentScheme = {
   body: joi
     .object({
       title: joi.string().min(4).max(55).required(),
-      videoURL: joi.string().min(4).required(),
+      description: joi.string().min(4).max(1000).required(),
     })
     .required(),
   query: joi
     .object({
-      courseId: generalFields._id,
+      lectureId: generalFields._id,
     })
     .required()
     .options({ presence: "required" }),

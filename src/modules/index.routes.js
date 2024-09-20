@@ -4,6 +4,7 @@ import courseRoutes from "./course/course.routes.js";
 import lectureRoutes from "./Lecture/lecture.routes.js";
 import codesRoutes from "./Codes/codes.routes.js";
 import joinRoutes from "./Enrollment/enrollment.routes.js";
+import assignmentRoutes from "./Assignment/assignment.routes.js";
 
 import authRoutes from "./Auth/auth.routes.js";
 
@@ -15,4 +16,5 @@ export {
   lectureRoutes,
   codesRoutes,
   joinRoutes,
+  assignmentRoutes,
 };

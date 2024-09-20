@@ -1,45 +1,43 @@
 import slugify from "slugify";
 import { categoryModel } from "../../../DB/Models/category.model.js";
 import { subCategoryModel } from "../../../DB/Models/subCategory.model.js";
-import { courseModel } from "../../../DB/Models/course.model.js";
+import { courseModel } from "./../../../DB/Models/course.model.js";
 import { nanoid } from "nanoid";
 import cloudinary from "../../utils/cloudinaryConfigration.js";
-import { ass } from "../../../DB/Models/.model.js";
+import { lectureModel } from "./../../../DB/Models/lecture.model.js";
 import { pagination } from "../../utils/pagination.js";
 import { ApiFeature } from "../../utils/apiFeature.js";
 import { encryptText } from "../../utils/encryptionFunction.js";
-import { AassignmentModel } from "../../../DB/Models/assignment.model.js";
-import { lectureModel } from "../../../DB/Models/lecture.model.js";
+import { AssignmentModel } from "./../../../DB/Models/assignment.model.js";
+
 // // =================create lecture=================
 
-export const createLecture = async (req, res, next) => {
-  const { title, description, dueDate } = req.body;
+export const createAssignment = async (req, res, next) => {
+  const { title, description } = req.body;
   const { file } = req;
 
   if (!file) {
     return res.status(400).json({ message: "PDF file is required" });
   }
-  const { courseId, lectureId } = req.query;
+  const { lectureId } = req.query;
   const { _id } = req.user;
-  const course = await courseModel.findById(courseId);
+  const lecture = await lectureModel.findById(lectureId);
+  if (!lecture) {
+    return next(new Error("invalid lectureId id ", { cause: 404 }));
+  }
+  const course = await courseModel.findById(lecture.courseId);
   if (!course) {
     return next(new Error("invalid course id ", { cause: 404 }));
   }
+
   const subCategory = await subCategoryModel.findById(course.subCategoryId);
   if (!subCategory) {
     return next(new Error("invalid subCategory id ", { cause: 404 }));
   }
-
   const category = await categoryModel.findById(course.categoryId);
   if (!category) {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
-
-  const slug = slugify(title, {
-    replacement: "_",
-    lower: true,
-    trim: true,
-  });
 
   if (!req.file) {
     return next(new Error("please upload course image", { cause: 400 }));
@@ -49,174 +47,168 @@ export const createLecture = async (req, res, next) => {
   const { secure_url, public_id } = await cloudinary.uploader.upload(
     req.file.path,
     {
-      folder: `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${customId}`,
+      folder: `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}/Assignment/${customId}`,
     }
   );
 
-  req.ImagePath = `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${customId}`;
+  req.ImagePath = `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}/Assignment/${customId}`;
 
-  // video URL encription
-  const encryptVideoURL = encryptText(videoURL, process.env.CRYPTO_SECRET_KEY);
-  const lectureObject = {
+  const assigmentObject = {
+    pdf: { secure_url, public_id },
     title,
-    slug,
-    videoURL: encryptVideoURL,
-    customId,
-    photo: { secure_url, public_id },
-    categoryId: course.categoryId,
-    subCategoryId: course.subCategoryId,
-    courseId,
+    description,
+    lectureId,
+    courseId: lecture.courseId,
     createdBy: _id,
-    teacher: _id,
   };
 
-  const createlecture = await lectureModel.create(lectureObject);
-  req.failedDocument = { model: lectureModel, _id: createlecture._id };
+  const createAssigment = await AssignmentModel.create(assigmentObject);
+  req.failedDocument = { model: AssignmentModel, _id: createAssigment._id };
 
-  if (!createlecture) {
+  if (!createAssigment) {
     await cloudinary.api.delete_resources_by_prefix(
-      `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${customId}` ///delete folder  'api.delete'
+      `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}/Assignment/${customId}` ///delete folder  'api.delete'
     ); //delete the image
     await cloudinary.api.delete_folder(
-      `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${customId}` ///delete folder  'api.delete'
+      `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}/Assignment/${customId}` ///delete folder  'api.delete'
     );
     return next(new Error("fail", { cause: 400 }));
   }
   res.status(201).json({
     message: " created successfuly",
-    lectures: createlecture,
+    Assignment: createAssigment,
   });
 };
 
 // // ============================update lecture ====================
 
-export const updateLecture = async (req, res, next) => {
-  const { title, videoURL } = req.body;
-  const { lectureId, categoryId, courseId, subCategoryId } = req.query;
-  const { _id } = req.user;
-  const lecture = await lectureModel.findById(lectureId);
-  if (!lecture) {
-    return next(new Error("invalid lecture id ", { cause: 404 }));
-  }
+// export const updateLecture = async (req, res, next) => {
+//   const { title, videoURL } = req.body;
+//   const { lectureId, categoryId, courseId, subCategoryId } = req.query;
+//   const { _id } = req.user;
+//   const lecture = await lectureModel.findById(lectureId);
+//   if (!lecture) {
+//     return next(new Error("invalid lecture id ", { cause: 404 }));
+//   }
 
-  const category = await categoryModel.findById(
-    categoryId || lecture.categoryId
-  );
-  if (categoryId) {
-    if (!category) {
-      return next(new Error("invalid category id ", { cause: 404 }));
-    }
-    lecture.categoryId = categoryId;
-  }
-  const subCategory = await categoryModel.findById(
-    categoryId || lecture.subCategory
-  );
+//   const category = await categoryModel.findById(
+//     categoryId || lecture.categoryId
+//   );
+//   if (categoryId) {
+//     if (!category) {
+//       return next(new Error("invalid category id ", { cause: 404 }));
+//     }
+//     lecture.categoryId = categoryId;
+//   }
+//   const subCategory = await categoryModel.findById(
+//     categoryId || lecture.subCategory
+//   );
 
-  if (subCategoryId) {
-    if (!subCategory) {
-      return next(new Error("invalid subCategory id ", { cause: 404 }));
-    }
-    lecture.subCategoryId = subCategoryId;
-  }
-  const course = await courseModel.findById(courseId || lecture.courseId);
-  if (courseId) {
-    if (!course) {
-      return next(new Error("invalid course id ", { cause: 404 }));
-    }
-    lecture.courseId = courseId;
-  }
+//   if (subCategoryId) {
+//     if (!subCategory) {
+//       return next(new Error("invalid subCategory id ", { cause: 404 }));
+//     }
+//     lecture.subCategoryId = subCategoryId;
+//   }
+//   const course = await courseModel.findById(courseId || lecture.courseId);
+//   if (courseId) {
+//     if (!course) {
+//       return next(new Error("invalid course id ", { cause: 404 }));
+//     }
+//     lecture.courseId = courseId;
+//   }
 
-  if (title) {
-    const slug = slugify(title, {
-      replacement: "_",
-      lower: true,
-      trim: true,
-    });
-    lecture.title = title;
-    lecture.slug = slug;
-  }
+//   if (title) {
+//     const slug = slugify(title, {
+//       replacement: "_",
+//       lower: true,
+//       trim: true,
+//     });
+//     lecture.title = title;
+//     lecture.slug = slug;
+//   }
 
-  //   =============change image==============
+//   //   =============change image==============
 
-  if (req.file) {
-    const { secure_url, public_id } = await cloudinary.uploader.upload(
-      req.file.path,
-      {
-        folder: `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}`,
-      }
-    );
+//   if (req.file) {
+//     const { secure_url, public_id } = await cloudinary.uploader.upload(
+//       req.file.path,
+//       {
+//         folder: `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}`,
+//       }
+//     );
 
-    // delete old image from host
+//     // delete old image from host
 
-    await cloudinary.uploader.destroy(lecture.photo.public_id);
+//     await cloudinary.uploader.destroy(lecture.photo.public_id);
 
-    //  add change image  in DB
-    lecture.photo = { secure_url, public_id };
-  }
+//     //  add change image  in DB
+//     lecture.photo = { secure_url, public_id };
+//   }
 
-  if (videoURL) {
-    const encryptVideoURL = encryptText(
-      videoURL,
-      process.env.CRYPTO_SECRET_KEY
-    );
+//   if (videoURL) {
+//     const encryptVideoURL = encryptText(
+//       videoURL,
+//       process.env.CRYPTO_SECRET_KEY
+//     );
 
-    lecture.desc = encryptVideoURL;
-  }
-  lecture.updatedBy = _id;
+//     lecture.desc = encryptVideoURL;
+//   }
+//   lecture.updatedBy = _id;
 
-  // save all changes
-  await lecture.save();
+//   // save all changes
+//   await lecture.save();
 
-  res.status(200).json({
-    message: "Done",
-    lecture,
-  });
-};
+//   res.status(200).json({
+//     message: "Done",
+//     lecture,
+//   });
+// };
 
 // // ======================delete lecture ==================
 
-export const deleteLecture = async (req, res, next) => {
-  const { lectureId } = req.query;
-  const { _id } = req.user;
-  console.log();
+// export const deleteLecture = async (req, res, next) => {
+//   const { lectureId } = req.query;
+//   const { _id } = req.user;
+//   console.log();
 
-  const lecture = await lectureModel.findOneAndDelete({
-    _id: lectureId,
-    createdBy: _id,
-  });
-  if (!lecture) {
-    return next(
-      new Error("invalid lecture id Or you are not create this lecture ", {
-        cause: 404,
-      })
-    );
-  }
+//   const lecture = await lectureModel.findOneAndDelete({
+//     _id: lectureId,
+//     createdBy: _id,
+//   });
+//   if (!lecture) {
+//     return next(
+//       new Error("invalid lecture id Or you are not create this lecture ", {
+//         cause: 404,
+//       })
+//     );
+//   }
 
-  const category = await categoryModel.findById(lecture.categoryId);
-  if (!category) {
-    return next(new Error("invalid category id ", { cause: 404 }));
-  }
-  const subCategory = await subCategoryModel.findById(lecture.subCategoryId);
-  if (!subCategory) {
-    return next(new Error("invalid subCategory id ", { cause: 404 }));
-  }
-  const course = await courseModel.findById(lecture.courseId);
-  if (!course) {
-    return next(new Error("invalid course id ", { cause: 404 }));
-  }
+//   const category = await categoryModel.findById(lecture.categoryId);
+//   if (!category) {
+//     return next(new Error("invalid category id ", { cause: 404 }));
+//   }
+//   const subCategory = await subCategoryModel.findById(lecture.subCategoryId);
+//   if (!subCategory) {
+//     return next(new Error("invalid subCategory id ", { cause: 404 }));
+//   }
+//   const course = await courseModel.findById(lecture.courseId);
+//   if (!course) {
+//     return next(new Error("invalid course id ", { cause: 404 }));
+//   }
 
-  // ===delete from host ===
-  await cloudinary.api.delete_resources_by_prefix(
-    `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
-  );
-  await cloudinary.api.delete_folder(
-    `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
-  );
+//   // ===delete from host ===
+//   await cloudinary.api.delete_resources_by_prefix(
+//     `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
+//   );
+//   await cloudinary.api.delete_folder(
+//     `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
+//   );
 
-  res.status(200).json({
-    message: "Done",
-  });
-};
+//   res.status(200).json({
+//     message: "Done",
+//   });
+// };
 
 // ===================get All lecture==============
 
@@ -247,43 +239,43 @@ export const deleteLecture = async (req, res, next) => {
 //   });
 // };
 
-export const getAllLectures = async (req, res, next) => {
-  const apiFeaturesInistant = new ApiFeature(lectureModel.find(), req.query)
-    .paginated()
-    .sort()
-    .select()
-    .filters()
-    .search();
+// export const getAllLectures = async (req, res, next) => {
+//   const apiFeaturesInistant = new ApiFeature(lectureModel.find(), req.query)
+//     .paginated()
+//     .sort()
+//     .select()
+//     .filters()
+//     .search();
 
-  const lectures = await apiFeaturesInistant.mongooseQuery
-    .populate({
-      path: "categoryId",
-      select: "name slug ",
-    })
-    .populate({
-      path: "subCategoryId",
-      select: "name slug ",
-    })
-    .populate({
-      path: "courseId",
-      select: "name",
-    })
-    .populate({
-      path: "teacher",
-      select: "fullName moreInfo subjecTeacher phoneNumber stage",
-    });
-  const paginationInfo = await apiFeaturesInistant.paginationInfo;
-  const all = await lectureModel.find().countDocuments();
-  const totalPages = Math.ceil(all / paginationInfo.perPages);
-  paginationInfo.totalPages = totalPages;
-  if (lectures.length) {
-    return res.status(200).json({
-      message: "Done",
-      data: lectures,
-      paginationInfo,
-    });
-  }
-  res.status(200).json({
-    message: "No Items yet",
-  });
-};
+//   const lectures = await apiFeaturesInistant.mongooseQuery
+//     .populate({
+//       path: "categoryId",
+//       select: "name slug ",
+//     })
+//     .populate({
+//       path: "subCategoryId",
+//       select: "name slug ",
+//     })
+//     .populate({
+//       path: "courseId",
+//       select: "name",
+//     })
+//     .populate({
+//       path: "teacher",
+//       select: "fullName moreInfo subjecTeacher phoneNumber stage",
+//     });
+//   const paginationInfo = await apiFeaturesInistant.paginationInfo;
+//   const all = await lectureModel.find().countDocuments();
+//   const totalPages = Math.ceil(all / paginationInfo.perPages);
+//   paginationInfo.totalPages = totalPages;
+//   if (lectures.length) {
+//     return res.status(200).json({
+//       message: "Done",
+//       data: lectures,
+//       paginationInfo,
+//     });
+//   }
+//   res.status(200).json({
+//     message: "No Items yet",
+//   });
+// };
