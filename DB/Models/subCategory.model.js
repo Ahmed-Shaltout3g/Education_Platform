@@ -5,7 +5,6 @@ const subCategorySchema = new Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
