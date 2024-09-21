@@ -82,200 +82,104 @@ export const createAssignment = async (req, res, next) => {
 
 // // ============================update lecture ====================
 
-// export const updateLecture = async (req, res, next) => {
-//   const { title, videoURL } = req.body;
-//   const { lectureId, categoryId, courseId, subCategoryId } = req.query;
-//   const { _id } = req.user;
-//   const lecture = await lectureModel.findById(lectureId);
-//   if (!lecture) {
-//     return next(new Error("invalid lecture id ", { cause: 404 }));
-//   }
+export const updateAssignment = async (req, res, next) => {
+  const { title, description } = req.body;
+  const { assignmentId } = req.query;
 
-//   const category = await categoryModel.findById(
-//     categoryId || lecture.categoryId
-//   );
-//   if (categoryId) {
-//     if (!category) {
-//       return next(new Error("invalid category id ", { cause: 404 }));
-//     }
-//     lecture.categoryId = categoryId;
-//   }
-//   const subCategory = await categoryModel.findById(
-//     categoryId || lecture.subCategory
-//   );
+  const assignment = await AssignmentModel.findById(assignmentId);
 
-//   if (subCategoryId) {
-//     if (!subCategory) {
-//       return next(new Error("invalid subCategory id ", { cause: 404 }));
-//     }
-//     lecture.subCategoryId = subCategoryId;
-//   }
-//   const course = await courseModel.findById(courseId || lecture.courseId);
-//   if (courseId) {
-//     if (!course) {
-//       return next(new Error("invalid course id ", { cause: 404 }));
-//     }
-//     lecture.courseId = courseId;
-//   }
+  if (!assignment) {
+    return next(new Error("Assignment not found", { cause: 404 }));
+  }
 
-//   if (title) {
-//     const slug = slugify(title, {
-//       replacement: "_",
-//       lower: true,
-//       trim: true,
-//     });
-//     lecture.title = title;
-//     lecture.slug = slug;
-//   }
+  // Update fields
+  if (title) assignment.title = title;
+  if (description) assignment.description = description;
 
-//   //   =============change image==============
+  // If there's a new file, upload it and delete the old one
+  if (req.file) {
+    const folderPath = assignment.pdf.public_id
+      .split("/")
+      .slice(0, -1)
+      .join("/");
 
-//   if (req.file) {
-//     const { secure_url, public_id } = await cloudinary.uploader.upload(
-//       req.file.path,
-//       {
-//         folder: `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}`,
-//       }
-//     );
+    await cloudinary.uploader.destroy(assignment.pdf.public_id);
 
-//     // delete old image from host
+    const { secure_url, public_id } = await cloudinary.uploader.upload(
+      req.file.path,
+      {
+        folder: folderPath,
+      }
+    );
 
-//     await cloudinary.uploader.destroy(lecture.photo.public_id);
+    assignment.pdf = { secure_url, public_id };
+  }
 
-//     //  add change image  in DB
-//     lecture.photo = { secure_url, public_id };
-//   }
+  await assignment.save();
 
-//   if (videoURL) {
-//     const encryptVideoURL = encryptText(
-//       videoURL,
-//       process.env.CRYPTO_SECRET_KEY
-//     );
-
-//     lecture.desc = encryptVideoURL;
-//   }
-//   lecture.updatedBy = _id;
-
-//   // save all changes
-//   await lecture.save();
-
-//   res.status(200).json({
-//     message: "Done",
-//     lecture,
-//   });
-// };
+  res.status(200).json({
+    message: "Assignment updated successfully",
+    assignment,
+  });
+};
 
 // // ======================delete lecture ==================
 
-// export const deleteLecture = async (req, res, next) => {
-//   const { lectureId } = req.query;
-//   const { _id } = req.user;
-//   console.log();
+export const deleteAssignment = async (req, res, next) => {
+  const { assignmentId } = req.query;
 
-//   const lecture = await lectureModel.findOneAndDelete({
-//     _id: lectureId,
-//     createdBy: _id,
-//   });
-//   if (!lecture) {
-//     return next(
-//       new Error("invalid lecture id Or you are not create this lecture ", {
-//         cause: 404,
-//       })
-//     );
-//   }
+  const assignment = await AssignmentModel.findById(assignmentId);
 
-//   const category = await categoryModel.findById(lecture.categoryId);
-//   if (!category) {
-//     return next(new Error("invalid category id ", { cause: 404 }));
-//   }
-//   const subCategory = await subCategoryModel.findById(lecture.subCategoryId);
-//   if (!subCategory) {
-//     return next(new Error("invalid subCategory id ", { cause: 404 }));
-//   }
-//   const course = await courseModel.findById(lecture.courseId);
-//   if (!course) {
-//     return next(new Error("invalid course id ", { cause: 404 }));
-//   }
+  if (!assignment) {
+    return next(new Error("Assignment not found", { cause: 404 }));
+  }
 
-//   // ===delete from host ===
-//   await cloudinary.api.delete_resources_by_prefix(
-//     `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
-//   );
-//   await cloudinary.api.delete_folder(
-//     `${process.env.ONLINE_PLATFORM_FOLDER}/${category.name}/${subCategory.name}/Courses/${course.customId}/Lectures/${lecture.customId}` ///delete images  'api.delete'
-//   );
+  // Delete the associated files from Cloudinary
+  await cloudinary.uploader.destroy(assignment.pdf.public_id);
 
-//   res.status(200).json({
-//     message: "Done",
-//   });
-// };
+  // Delete the assignment from the database
+  await AssignmentModel.findByIdAndDelete(assignmentId);
 
+  res.status(200).json({
+    message: "Assignment deleted successfully",
+  });
+};
 // ===================get All lecture==============
 
-// export const getAlllectures = async (req, res, next) => {
-//   const { page, size } = req.query;
+export const getAllAssignments = async (req, res, next) => {
+  const apiFeaturesInistant = new ApiFeature(AssignmentModel.find(), req.query)
+    .paginated()
+    .sort()
+    .select()
+    .filters()
+    .search();
 
-//   const { perPages, skip, currentPage, nextPage, prePage } = pagination({
-//     page,
-//     size,
-//   });
-//   const all = await lectureModel.find().count();
-//   const lectures = await lectureModel.find().limit(perPages).skip(skip);
-//   const totalPages = Math.ceil(all / perPages);
+  const assignment = await apiFeaturesInistant.mongooseQuery
+    .populate({
+      path: "lectureId",
+      select: "title slug ",
+    })
 
-//   if (lectures.length) {
-//     return res.status(200).json({
-//       message: "Done",
-//       data: lectures,
-//       perPages,
-//       currentPage,
-//       nextPage,
-//       prePage,
-//       totalPages,
-//     });
-//   }
-//   res.status(200).json({
-//     message: "No Items yet",
-//   });
-// };
-
-// export const getAllLectures = async (req, res, next) => {
-//   const apiFeaturesInistant = new ApiFeature(lectureModel.find(), req.query)
-//     .paginated()
-//     .sort()
-//     .select()
-//     .filters()
-//     .search();
-
-//   const lectures = await apiFeaturesInistant.mongooseQuery
-//     .populate({
-//       path: "categoryId",
-//       select: "name slug ",
-//     })
-//     .populate({
-//       path: "subCategoryId",
-//       select: "name slug ",
-//     })
-//     .populate({
-//       path: "courseId",
-//       select: "name",
-//     })
-//     .populate({
-//       path: "teacher",
-//       select: "fullName moreInfo subjecTeacher phoneNumber stage",
-//     });
-//   const paginationInfo = await apiFeaturesInistant.paginationInfo;
-//   const all = await lectureModel.find().countDocuments();
-//   const totalPages = Math.ceil(all / paginationInfo.perPages);
-//   paginationInfo.totalPages = totalPages;
-//   if (lectures.length) {
-//     return res.status(200).json({
-//       message: "Done",
-//       data: lectures,
-//       paginationInfo,
-//     });
-//   }
-//   res.status(200).json({
-//     message: "No Items yet",
-//   });
-// };
+    .populate({
+      path: "courseId",
+      select: "name",
+    })
+    .populate({
+      path: "createdBy",
+      select: "fullName  phoneNumber ",
+    });
+  const paginationInfo = await apiFeaturesInistant.paginationInfo;
+  const all = await AssignmentModel.find().countDocuments();
+  const totalPages = Math.ceil(all / paginationInfo.perPages);
+  paginationInfo.totalPages = totalPages;
+  if (assignment.length) {
+    return res.status(200).json({
+      message: "Done",
+      data: assignment,
+      paginationInfo,
+    });
+  }
+  res.status(200).json({
+    message: "No Items yet",
+  });
+};

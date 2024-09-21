@@ -17,7 +17,10 @@ export const createSubCategory = async (req, res, next) => {
     return next(new Error("invalid category id ", { cause: 404 }));
   }
   // === take name and check if dublicated
-  const isNameDublicated = await subCategoryModel.findOne({ name });
+  const isNameDublicated = await subCategoryModel.findOne({
+    name,
+    categoryId,
+  });
   if (isNameDublicated) {
     return next(
       new Error("subCategory name is duplicated! please enter Another name", {
@@ -87,7 +90,10 @@ export const updateSubCategory = async (req, res, next) => {
   }
   // name is not dublicated
 
-  const isDublicated = await subCategoryModel.findOne({ name });
+  const isDublicated = await subCategoryModel.findOne({
+    name,
+    categoryId: subCategory.categoryId,
+  });
   if (isDublicated) {
     return next(
       new Error("new name is dublicated please enter anothe name ", {

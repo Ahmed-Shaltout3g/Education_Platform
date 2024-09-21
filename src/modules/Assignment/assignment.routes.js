@@ -19,24 +19,26 @@ router.post(
   validationCoreFunction(addAssignmentScheme),
   asyncHandler(assignmentController.createAssignment)
 );
-// router.put(
-//   "/update",
-//   Auth(),
-//   authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
-//   myMulter(allowedExtensions.Image).array("image", 3),
-//   asyncHandler(lectureController.updateLecture)
-// );
-// router.delete(
-//   "/delete",
-//   Auth(),
-//   authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
+router.patch(
+  "/update",
+  Auth(),
+  authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
+  myMulter({
+    customValidation: allowedExtensions.Files,
+  }).single("application"),
+  asyncHandler(assignmentController.updateAssignment)
+);
+router.delete(
+  "/delete",
+  Auth(),
+  authorization([systemRoles.ADMIN, systemRoles.TEACHER]),
 
-//   asyncHandler(lectureController.deleteLecture)
-// );
-// router.get(
-//   "/",
+  asyncHandler(assignmentController.deleteAssignment)
+);
+router.get(
+  "/",
 
-//   asyncHandler(lectureController.getAllLectures)
-// );
+  asyncHandler(assignmentController.getAllAssignments)
+);
 
 export default router;
