@@ -21,6 +21,8 @@ export const createSubCategory = async (req, res, next) => {
     name,
     categoryId,
   });
+  console.log(isNameDublicated);
+
   if (isNameDublicated) {
     return next(
       new Error("subCategory name is duplicated! please enter Another name", {

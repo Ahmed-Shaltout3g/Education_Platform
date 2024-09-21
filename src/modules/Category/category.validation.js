@@ -4,14 +4,24 @@ import { generalFields } from "./../../middlewares/validation.js";
 export const categorySchema = {
   body: joi
     .object({
-      name: joi.string().required(),
+      name: joi
+        .string()
+        .min(4)
+        .valid("primary", "preparatory", "secondary")
+        .max(55)
+        .required(),
     })
     .required(),
 };
 export const categoryUpdateSchema = {
   body: joi
     .object({
-      name: joi.string().min(4).max(55).required(),
+      name: joi
+        .string()
+        .min(4)
+        .valid("primary", "preparatory", "secondary")
+        .max(55)
+        .required(),
     })
     .required(),
   query: joi

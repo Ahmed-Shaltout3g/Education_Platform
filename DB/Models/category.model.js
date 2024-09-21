@@ -5,9 +5,9 @@ const categorySchema = new Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
+      enum: ["primary", "preparatory", "secondary"],
     },
 
     slug: {

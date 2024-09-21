@@ -5,8 +5,7 @@ const subCategorySchema = new Schema(
     name: {
       type: String,
       required: true,
-      lowercase: true,
-      trim: true,
+      enum: ["first", "second", "third", "fourth", "fifth", "sixth"],
     },
     slug: {
       type: String,

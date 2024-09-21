@@ -19,6 +19,8 @@ const asyncHandler = (API) => {
         await model.findByIdAndDelete(_id);
       }
       if (err.code == 11000) {
+        console.log(err);
+
         next(new Error("Email already exist", { cause: 400 }));
       } else {
         return next(new Error(err.message));
