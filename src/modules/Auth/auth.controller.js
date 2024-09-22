@@ -232,6 +232,30 @@ export const resetPassword = async (req, res, next) => {
   res.status(200).json({ message: "Done , please try to login" });
 };
 
+// ------------------------------change password-----------------
+export const changePass = async (req, res, next) => {
+  const { _id } = req.user;
+  const { oldPass, newPass } = req.body;
+  if (oldPass == newPass) {
+    return next(new Error("old password equal new password ", { cause: 400 }));
+  }
+  const user = await userModel.findById({ _id });
+  if (!user) {
+    return next(new Error("Not found please try to login ", { cause: 400 }));
+  }
+  const match = comparePassword(oldPass, user.password);
+  if (!match) {
+    return next(new Error("Wrong old password ", { cause: 400 }));
+  }
+
+  user.password = newPass;
+  const save = await user.save();
+
+  if (!save) {
+    return next(new Error("fail please try again ", { cause: 500 }));
+  }
+  res.status(200).json({ message: "Done, please try to login " });
+};
 // _______________________profile_image___________________
 
 export const uploadProfilePicture = async (req, res, next) => {
@@ -240,6 +264,11 @@ export const uploadProfilePicture = async (req, res, next) => {
     return next(new Error("please upload profile image", { cause: 400 }));
   }
   const user = await userModel.findById({ _id });
+
+  // Delete old profile image if exists
+  if (user.profileImage && user.profileImage.public_id) {
+    await cloudinary.uploader.destroy(user.profileImage.public_id);
+  }
 
   const { secure_url, public_id } = await cloudinary.uploader.upload(
     req.file.path,
@@ -302,6 +331,7 @@ export const updateUser = async (req, res, next) => {
   });
 };
 
+// =============================TEACHER======================
 // ======================add teacher=======================
 export const addTeacher = async (req, res, next) => {
   const { _id } = req.user;

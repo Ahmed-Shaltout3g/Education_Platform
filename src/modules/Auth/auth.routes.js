@@ -42,6 +42,12 @@ router.patch(
   myMulter().single("image"),
   asyncHandler(allRoutes.uploadProfilePicture)
 );
+router.patch(
+  "/changePass",
+  Auth(),
+
+  asyncHandler(allRoutes.changePass)
+);
 router.post(
   "/addTeacher",
   Auth(),
