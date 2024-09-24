@@ -59,7 +59,10 @@ const authFunction = async (req, res, next) => {
           isLogedIn: true,
           isConfirmed: user.isConfirmed,
         },
+        signature: process.env.TOKEN_KEY,
+        expiresIn: "60",
       });
+      console.log(refreshToken);
 
       if (!refreshToken) {
         return next(
@@ -71,10 +74,10 @@ const authFunction = async (req, res, next) => {
 
       // user.token = refreshToken;
       // await user.save();
-      await userModel.findOneAndUpdate(
-        { token: separaedToken },
-        { token: refreshToken }
-      );
+      // await userModel.findOneAndUpdate(
+      //   { token: separaedToken },
+      //   { token: refreshToken }
+      // );
 
       res.status(200).json({ message: "Refresh token", refreshToken });
     }
