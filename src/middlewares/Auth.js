@@ -60,7 +60,7 @@ const authFunction = async (req, res, next) => {
           isConfirmed: user.isConfirmed,
         },
         signature: process.env.TOKEN_KEY,
-        expiresIn: "60",
+        expiresIn: "10h",
       });
       console.log(refreshToken);
 
