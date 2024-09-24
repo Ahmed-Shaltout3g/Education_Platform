@@ -2,7 +2,7 @@ import Jwt from "jsonwebtoken";
 export const generateToken = ({
   payload = {},
   signature = process.env.TOKEN_KEY,
-  expiresIn = "60",
+  expiresIn = "1m",
 }) => {
   if (Object.keys(payload).length) {
     const token = Jwt.sign(payload, signature, { expiresIn });
